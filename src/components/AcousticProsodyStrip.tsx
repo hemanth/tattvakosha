@@ -8,7 +8,7 @@ interface AcousticProsodyStripProps {
 }
 
 /**
- * Signature Tattvakośa Element (Achromatic Ledger · Data Hue #1d5fbf):
+ * Signature Tattvakośa Element (Achromatic Ledger · Carbon Ink + Sindūra Prosody):
  * Combines 24,000 Hz Ninada Sanskrit Neural TTS playback with an authentic
  * Pāṇinian Chandas Prosody Meter (akṣara breakdown + laghu 1-mātrā / guru 2-mātrā bars).
  */

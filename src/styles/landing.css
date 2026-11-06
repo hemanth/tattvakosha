@@ -1,7 +1,7 @@
 /*
  * Tattvakośa · Editorial Landing Page
  * Dealt via design-taste-frontend: `uneven-photographs` (seed 287062371)
- * Shared brand palette (#f4f3f1 stone ground, #0a0a0a ink, #1d5fbf Mayūra Sapphire)
+ * Shared brand palette (#f4f3f1 stone ground, #0a0a0a carbon ink, #9a3412 manuscript sindūra)
  * Shared 2-typeface system: Geist + Tiro Devanagari Sanskrit
  * Strict 5-step type scale · Zero thin rules · Zero resting shadows · Square media & flat square actions
  */
@@ -13,8 +13,9 @@
   --lp-dark: #0e0e0e;
   --lp-night: #080808;
   --lp-ink: #0a0a0a;
+  --lp-ink-hover: #2b2a28;
   --lp-muted: #4a4a48;
-  --lp-accent: #1d5fbf;
+  --lp-accent: #9a3412;
   --lp-accent-ink: #ffffff;
   --lp-night-ink: #f5f5f3;
   --lp-night-muted: #b5b5b0;
@@ -133,12 +134,12 @@
 }
 
 .lp-btn-primary {
-  background: var(--lp-accent);
-  color: var(--lp-accent-ink);
+  background: var(--lp-ink);
+  color: var(--lp-night-ink);
 }
 
 .lp-btn-primary:hover {
-  background: #164d9c;
+  background: var(--lp-ink-hover);
 }
 
 .lp-btn-paper {
@@ -487,8 +488,8 @@
   min-height: 40px;
   padding: 0 16px;
   border: none;
-  background: var(--lp-accent);
-  color: var(--lp-accent-ink);
+  background: var(--lp-ink);
+  color: var(--lp-night-ink);
   font-size: var(--lp-s2);
   font-weight: 500;
   cursor: pointer;
@@ -496,7 +497,7 @@
 }
 
 .lp-speak-action:hover {
-  background: #164d9c;
+  background: var(--lp-ink-hover);
 }
 
 .lp-prosody-inline {

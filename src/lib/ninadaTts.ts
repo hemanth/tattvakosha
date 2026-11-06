@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { scanSanskritProsody } from "./sanskritProsody";
 
 export type NinadaGender = "male" | "female";
 export type NinadaEnginePhase = "unloaded" | "loading" | "ready" | "synthesizing" | "playing" | "error";
@@ -57,26 +58,149 @@ export function useNinadaVoice(): NinadaVoiceState {
   return useSyncExternalStore(subscribeNinada, getNinadaSnapshot, getNinadaSnapshot);
 }
 
-/**
- * Normalizes dictionary headwords and Sanskrit lakṣaṇas for clean 24 kHz studio recitation.
- */
-export function cleanSanskritForRecitation(rawText: string): string {
-  let text = rawText
-    .replace(/√/g, "")
-    .replace(/\([^)]*\)/g, " ")
-    .replace(/\[[^\]]*\]/g, " ")
+const DIRGHA_VOWEL_GLYPHS = new Set(["आ", "ई", "ऊ", "ॠ", "ॡ", "ए", "ऐ", "ओ", "औ"]);
+const STUDIO_HOP_LENGTH = 256;
+
+function stripEditorialAnnotations(rawText: string): string {
+  let text = rawText.replace(/√/g, "");
+  // Iteratively strip nested parentheticals e.g. "ड (डमरुधृक् (शिवः))"
+  while (/\([^()]*\)/.test(text)) {
+    text = text.replace(/\([^()]*\)/g, " ");
+  }
+  while (/\[[^[\]]*\]/.test(text)) {
+    text = text.replace(/\[[^[\]]*\]/g, " ");
+  }
+  return text
+    .replace(/[()[\]]/g, " ")
     .replace(/^[\u2013\u2014\-]+|[\u2013\u2014\-]+$/g, "")
     .replace(/-\s+/g, "")
     .replace(/\s+/g, " ")
     .trim();
+}
 
+/**
+ * Normalizes dictionary headwords and Sanskrit lakṣaṇas for clean 24 kHz studio recitation.
+ */
+export function cleanSanskritForRecitation(rawText: string): string {
+  let text = stripEditorialAnnotations(rawText);
   if (!text) return "";
 
-  // Ensure prosodic closure for short headwords and single syllables
   if (!/[।॥.!?]$/.test(text)) {
     text = `${text} ।`;
   }
   return text;
+}
+
+/**
+ * Detects isolated single-akṣara letters (अ..क्ष) and Ekākṣara monosyllables (सत्, चित्, गौः, वाक्)
+ * so we can synthesize them inside a classical Sanskrit carrier frame ("अथ X इति।") and slice out
+ * the exact target syllable using VITS token-duration alignment. This prevents character-VITS
+ * schwa deletion on bare consonants (ख, च, ष) and eliminates trailing danda breath artifacts.
+ */
+function prepareMonosyllableCarrier(rawText: string): {
+  stem: string;
+  carrierText: string;
+  rate: number;
+} | null {
+  const bare = stripEditorialAnnotations(rawText)
+    .replace(/[।॥.!?,;:]+$/g, "")
+    .trim();
+  if (!bare || bare.includes(" ")) return null;
+  const prosody = scanSanskritProsody(bare);
+  if (prosody.syllables.length !== 1) return null;
+
+  const lookup = bare === "ॡ" ? "ऌऽ" : bare;
+  const rate = DIRGHA_VOWEL_GLYPHS.has(bare) ? 0.78 : 0.86;
+  return {
+    stem: bare,
+    carrierText: `अथ ${lookup} इति।`,
+    rate
+  };
+}
+
+function sliceCarrierSyllablePcm(
+  pcm: Float32Array,
+  durs: number[],
+  sampleRate: number
+): Float32Array {
+  if (!durs || durs.length < 17 || pcm.length === 0) {
+    return pcm;
+  }
+
+  const sumFrames = (startIdx: number, endIdx: number): number => {
+    let total = 0;
+    const limit = Math.min(endIdx, durs.length);
+    for (let i = startIdx; i < limit; i++) total += durs[i];
+    return total;
+  };
+
+  // Interleaved token layout for "अथ <target> इति।":
+  //   0:<BLNK>, 1:'अ', 2:<BLNK>, 3:'थ', 4:<BLNK>, 5:' ' (left pause), 6:<BLNK>, 7..target..,
+  //   (len-10):' ' (right pause), (len-9):<BLNK>, (len-8)..'इति।'
+  const leftWinStart = Math.min(pcm.length, sumFrames(0, 5) * STUDIO_HOP_LENGTH);
+  const leftWinEnd = Math.min(pcm.length, sumFrames(0, 6) * STUDIO_HOP_LENGTH);
+  const rightSpaceIdx = durs.length - 10;
+  const rightWinStart = Math.min(pcm.length, sumFrames(0, rightSpaceIdx) * STUDIO_HOP_LENGTH);
+  const rightWinEnd = Math.min(pcm.length, sumFrames(0, rightSpaceIdx + 2) * STUDIO_HOP_LENGTH);
+
+  const findQuietSample = (st: number, ed: number, preferLate: boolean): number => {
+    const win = Math.round(0.01 * sampleRate); // 10 ms energy window
+    if (ed - st <= win) return Math.floor((st + ed) / 2);
+    let bestPos = preferLate ? ed - Math.floor(win / 2) : st + Math.floor(win / 2);
+    let bestEnergy = Number.POSITIVE_INFINITY;
+    const step = Math.max(24, Math.floor(win / 5));
+    for (let p = st; p <= ed - win; p += step) {
+      let energy = 0;
+      for (let j = 0; j < win; j++) {
+        const s = pcm[p + j];
+        energy += s * s;
+      }
+      if (preferLate ? energy <= bestEnergy * 1.05 : energy < bestEnergy) {
+        if (energy < bestEnergy) bestEnergy = energy;
+        bestPos = p + Math.floor(win / 2);
+      }
+    }
+    return bestPos;
+  };
+
+  const prePad = Math.round(0.008 * sampleRate);
+  const postPad = Math.round(0.01 * sampleRate);
+  const cutStart = Math.max(0, findQuietSample(leftWinStart, leftWinEnd, true) - prePad);
+  const cutEnd = Math.min(pcm.length, findQuietSample(rightWinStart, rightWinEnd, false) + postPad);
+
+  if (cutEnd <= cutStart + Math.round(0.025 * sampleRate)) {
+    return pcm;
+  }
+
+  const coreLen = cutEnd - cutStart;
+  const tailSilence = Math.round(0.08 * sampleRate);
+  const out = new Float32Array(coreLen + tailSilence);
+  out.set(pcm.subarray(cutStart, cutEnd), 0);
+
+  // Smooth raised-cosine onset and release envelopes (zero boundary clicks)
+  const fadeIn = Math.min(Math.round(0.01 * sampleRate), Math.floor(coreLen / 4));
+  const fadeOut = Math.min(Math.round(0.02 * sampleRate), Math.floor(coreLen / 4));
+  for (let i = 0; i < fadeIn; i++) {
+    out[i] *= 0.5 * (1 - Math.cos((Math.PI * i) / fadeIn));
+  }
+  for (let i = 0; i < fadeOut; i++) {
+    out[coreLen - 1 - i] *= 0.5 * (1 - Math.cos((Math.PI * i) / fadeOut));
+  }
+
+  // Gentle perceptual level balance for quiet aspirates/nasals (ङ, ञ, ख, फ)
+  let peak = 0;
+  for (let i = 0; i < coreLen; i++) {
+    const a = Math.abs(out[i]);
+    if (a > peak) peak = a;
+  }
+  if (peak > 0.05 && peak < 0.38) {
+    const gain = Math.min(1.85, 0.44 / peak);
+    for (let i = 0; i < coreLen; i++) {
+      out[i] *= gain;
+    }
+  }
+
+  return out;
 }
 
 // Singleton runtime handles
@@ -90,6 +214,10 @@ let reqSeq = 1;
 let activeReqId = 0;
 let activePlaySessionId = 0;
 let currentChunks: Float32Array[] = [];
+let currentCarrierMode = false;
+let currentCarrierDurs: number[] = [];
+let currentSampleRate = SAMPLE_RATE;
+let currentTtfaMs: number | null = null;
 let fallbackNodes: AudioBufferSourceNode[] = [];
 let fallbackNextTime = 0;
 let fallbackEndTimer: number | null = null;
@@ -251,13 +379,23 @@ function ensureSynthWorker(): Worker {
       const pcm: Float32Array = msg.pcm;
       const sr = Number(msg.sampleRate || SAMPLE_RATE);
       if (pcm && pcm.length > 0) {
-        // Clone before transferring or storing so LRU cache keeps intact Float32Array
         const copyForCache = pcm.slice();
         currentChunks.push(copyForCache);
+        currentSampleRate = sr;
+        if (typeof msg.ttfaMs === "number" && currentTtfaMs === null) {
+          currentTtfaMs = Math.round(msg.ttfaMs);
+        }
+
+        if (currentCarrierMode) {
+          if (Array.isArray(msg.durations) && msg.durations.length > 0) {
+            currentCarrierDurs = msg.durations.map(Number);
+          }
+          return;
+        }
 
         patchState({
           phase: "playing",
-          ttfaMs: typeof msg.ttfaMs === "number" ? Math.round(msg.ttfaMs) : state.ttfaMs
+          ttfaMs: currentTtfaMs ?? state.ttfaMs
         });
 
         if (workletReady && workletNode) {
@@ -280,10 +418,58 @@ function ensureSynthWorker(): Worker {
     if (msg.type === "done") {
       const finishedSession = activePlaySessionId;
       const cacheKey = currentCacheKey;
+
+      if (currentCarrierMode && currentChunks.length > 0) {
+        let total = 0;
+        for (const c of currentChunks) total += c.length;
+        const rawMerged = new Float32Array(total);
+        let offset = 0;
+        for (const c of currentChunks) {
+          rawMerged.set(c, offset);
+          offset += c.length;
+        }
+        const sliced = sliceCarrierSyllablePcm(rawMerged, currentCarrierDurs, currentSampleRate);
+        if (cacheKey && sliced.length > 0) {
+          rememberPcm(cacheKey, [sliced]);
+        }
+        currentChunks = [];
+        currentCarrierMode = false;
+        currentCarrierDurs = [];
+
+        patchState({
+          phase: "playing",
+          ttfaMs: typeof msg.totalMs === "number" ? Math.round(msg.totalMs) : currentTtfaMs ?? state.ttfaMs
+        });
+
+        if (workletReady && workletNode) {
+          const transferCopy = sliced.slice();
+          workletNode.port.postMessage(
+            {
+              type: "push",
+              sessionId: finishedSession,
+              pcm: transferCopy,
+              sampleRate: currentSampleRate
+            },
+            [transferCopy.buffer]
+          );
+          workletNode.port.postMessage({
+            type: "eos",
+            sessionId: finishedSession
+          });
+        } else if (audioCtx) {
+          schedulePcmFallback(audioCtx, sliced, currentSampleRate, true, finishedSession);
+        } else {
+          patchState({ phase: "ready", activeUtteranceId: null });
+        }
+        return;
+      }
+
       if (cacheKey && currentChunks.length > 0) {
         rememberPcm(cacheKey, currentChunks);
       }
       currentChunks = [];
+      currentCarrierMode = false;
+      currentCarrierDurs = [];
 
       if (workletReady && workletNode) {
         workletNode.port.postMessage({
@@ -300,6 +486,8 @@ function ensureSynthWorker(): Worker {
 
     if (msg.type === "error") {
       currentChunks = [];
+      currentCarrierMode = false;
+      currentCarrierDurs = [];
       patchState({
         phase: "error",
         activeUtteranceId: null,
@@ -326,6 +514,9 @@ export function stopSanskritSpeech(): void {
   activeReqId += 1;
   activePlaySessionId += 1;
   currentChunks = [];
+  currentCarrierMode = false;
+  currentCarrierDurs = [];
+  currentTtfaMs = null;
   currentCacheKey = null;
 
   if (synthWorker) {
@@ -439,6 +630,26 @@ export async function speakSanskritWithNinada(rawSanskrit: string, utteranceId: 
   activeReqId = reqId;
   currentCacheKey = cacheKey;
   currentChunks = [];
+  currentCarrierDurs = [];
+  currentTtfaMs = null;
+
+  const monoCarrier = state.isNeural ? prepareMonosyllableCarrier(rawSanskrit) : null;
+  currentCarrierMode = Boolean(monoCarrier);
+
+  if (monoCarrier) {
+    worker.postMessage({
+      type: "stream",
+      reqId,
+      lang: "sa",
+      voice,
+      text: monoCarrier.carrierText,
+      rate: monoCarrier.rate,
+      noise: 0.25,
+      noiseDuration: 0,
+      tier: "auto"
+    });
+    return;
+  }
 
   worker.postMessage({
     type: "stream",

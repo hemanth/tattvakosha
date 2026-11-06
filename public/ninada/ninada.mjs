@@ -955,7 +955,7 @@ function isDevConsonant(ch) {
 function isDevIndepVowel(ch) {
   if (!ch) return false;
   const cp = ch.codePointAt(0);
-  return (cp >= 0x0904 && cp <= 0x0914) || cp === 0x0960 || cp === 0x090c;
+  return (cp >= 0x0904 && cp <= 0x0914) || cp === 0x0960 || cp === 0x0961 || cp === 0x090c;
 }
 
 function isDevMatra(ch) {

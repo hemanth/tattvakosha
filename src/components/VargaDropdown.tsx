@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 
 interface VargaDropdownProps {
   value: string;
@@ -72,9 +73,45 @@ export function VargaDropdown({
   const [open, setOpen] = useState(false);
   const [filterText, setFilterText] = useState("");
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [popoverStyle, setPopoverStyle] = useState<CSSProperties>({});
 
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerGroupRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const filterInputRef = useRef<HTMLInputElement>(null);
+
+  const updatePopoverPosition = useCallback(() => {
+    const triggerEl = triggerGroupRef.current;
+    if (!triggerEl) return;
+    const rect = triggerEl.getBoundingClientRect();
+    const vw = window.innerWidth || 1280;
+    const vh = window.innerHeight || 800;
+    const margin = 12;
+    const width = Math.min(352, vw - margin * 2);
+    const left = Math.max(margin, Math.min(rect.left, vw - width - margin));
+    const spaceBelow = vh - rect.bottom - margin;
+    const spaceAbove = rect.top - margin;
+
+    if (spaceBelow >= 260 || spaceBelow >= spaceAbove) {
+      const maxH = Math.min(420, Math.max(180, spaceBelow - 6));
+      setPopoverStyle({
+        top: `${Math.round(rect.bottom + 6)}px`,
+        left: `${Math.round(left)}px`,
+        width: `${Math.round(width)}px`,
+        maxHeight: `${Math.round(maxH)}px`,
+        ["--varga-body-max-h" as string]: `${Math.max(110, Math.round(maxH - 82))}px`
+      });
+    } else {
+      const maxH = Math.min(420, Math.max(180, spaceAbove - 6));
+      setPopoverStyle({
+        bottom: `${Math.round(vh - rect.top + 6)}px`,
+        left: `${Math.round(left)}px`,
+        width: `${Math.round(width)}px`,
+        maxHeight: `${Math.round(maxH)}px`,
+        ["--varga-body-max-h" as string]: `${Math.max(110, Math.round(maxH - 82))}px`
+      });
+    }
+  }, []);
 
   const allDomainKeys = useMemo(() => Object.keys(domainCounts), [domainCounts]);
 
@@ -119,6 +156,11 @@ export function VargaDropdown({
     return list;
   }, [groupedSections, filterText]);
 
+  useLayoutEffect(() => {
+    if (!open) return;
+    updatePopoverPosition();
+  }, [open, updatePopoverPosition]);
+
   useEffect(() => {
     if (!open) return;
     setFilterText("");
@@ -130,11 +172,16 @@ export function VargaDropdown({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // Close on outside click or Escape
+  // Reposition on viewport resize or external scroll; close on outside click or Escape
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        rootRef.current &&
+        !rootRef.current.contains(target) &&
+        (!popoverRef.current || !popoverRef.current.contains(target))
+      ) {
         setOpen(false);
       }
     };
@@ -144,13 +191,23 @@ export function VargaDropdown({
         setOpen(false);
       }
     };
+    const onScrollOrResize = (e: Event) => {
+      if (e.type === "scroll" && popoverRef.current && popoverRef.current.contains(e.target as Node)) {
+        return;
+      }
+      updatePopoverPosition();
+    };
     document.addEventListener("mousedown", onPointerDown);
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", onScrollOrResize);
+    window.addEventListener("scroll", onScrollOrResize, true);
     return () => {
       document.removeEventListener("mousedown", onPointerDown);
       window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", onScrollOrResize);
+      window.removeEventListener("scroll", onScrollOrResize, true);
     };
-  }, [open]);
+  }, [open, updatePopoverPosition]);
 
   const commitSelection = (nextVal: string) => {
     onChange(nextVal);
@@ -186,7 +243,7 @@ export function VargaDropdown({
 
   return (
     <div ref={rootRef} className={`varga-dropdown ${open ? "is-open" : ""}`} onKeyDown={handleKeyDown}>
-      <div className={`varga-trigger-group ${isFiltered ? "is-filtered" : ""}`}>
+      <div ref={triggerGroupRef} className={`varga-trigger-group ${isFiltered ? "is-filtered" : ""}`}>
         <button
           type="button"
           className="varga-trigger"
@@ -233,8 +290,16 @@ export function VargaDropdown({
         )}
       </div>
 
-      {open && (
-        <div className="varga-popover" role="listbox" aria-label="Thematic Varga Index">
+      {open &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            className="varga-popover"
+            style={popoverStyle}
+            role="listbox"
+            aria-label="Thematic Varga Index"
+          >
           {/* Editorial Bookplate Header */}
           <div className="varga-popover-head">
             <div className="varga-popover-title-row">
@@ -329,7 +394,8 @@ export function VargaDropdown({
               ))
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

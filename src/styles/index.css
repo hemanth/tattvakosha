@@ -25,11 +25,12 @@
   --muted: #4f4f4f;
   --faint: #636363;
 
-  /* Near-Black Primary Action & Single Data Hue (Mayūra Sapphire #1d5fbf) */
-  --primary: #141414;
+  /* Near-Black Primary Action & Manuscript Sindūra Data Hue (#9a3412) */
+  --primary: #141413;
+  --primary-hover: #2c2b29;
   --primary-ink: #ffffff;
-  --data-hue: #1d5fbf;
-  --data-hue-soft: #edf4fc;
+  --data-hue: #9a3412;
+  --data-hue-soft: #f8efeb;
   --positive: #247b50;
 
   /* Bimodal Tight Radii (8 / 6 / 4) */
@@ -83,10 +84,11 @@
   --muted: #b8b8b8;
   --faint: #949494;
 
-  --primary: #f5f5f5;
-  --primary-ink: #0a0a0a;
-  --data-hue: #5b9cf6;
-  --data-hue-soft: #13233a;
+  --primary: #f2f1ed;
+  --primary-hover: #dbd9d2;
+  --primary-ink: #0c0c0b;
+  --data-hue: #e0724f;
+  --data-hue-soft: #261611;
   --positive: #3fc07a;
 
   color-scheme: dark;
@@ -206,6 +208,7 @@ a:hover {
   position: sticky;
   top: 0;
   height: 100dvh;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 20px 12px 16px;
   background: var(--ground);
@@ -604,18 +607,16 @@ a:hover {
 }
 
 .varga-popover {
-  position: absolute;
-  left: 4px;
-  top: calc(100% + 6px);
-  width: min(380px, calc(100vw - 32px));
-  max-height: min(460px, 68vh);
+  position: fixed;
+  width: min(352px, calc(100vw - 24px));
+  max-height: min(420px, 72vh);
   display: flex;
   flex-direction: column;
   background: var(--surface);
   border: 1px solid var(--control);
   border-radius: var(--radius-card);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14); /* taste-skill-ignore */
-  z-index: var(--z-popover);
+  z-index: 1200;
   overflow: hidden;
 }
 
@@ -669,6 +670,9 @@ a:hover {
 }
 
 .varga-popover-body {
+  flex: 1;
+  min-height: 0;
+  max-height: var(--varga-body-max-h, 320px);
   overflow-y: auto;
   padding: 8px;
 }
@@ -1185,7 +1189,7 @@ a:hover {
   color: var(--muted);
 }
 
-/* Signature Product Element: Chandas Prosody & Ninada 24 kHz Strip (Data Hue #1d5fbf) */
+/* Signature Product Element: Chandas Prosody & Ninada 24 kHz Strip */
 .prosody-strip {
   display: flex;
   align-items: center;
@@ -1207,24 +1211,21 @@ a:hover {
   min-height: 38px;
   padding: 0 14px;
   border-radius: var(--radius-control);
-  border: 1px solid var(--data-hue);
-  background: var(--data-hue);
-  color: #ffffff;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: var(--primary-ink);
   font-size: 0.84rem;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-  transition: opacity 150ms ease, transform 120ms ease;
-}
-
-[data-theme="dark"] .prosody-play-btn {
-  color: #0a0a0a;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 120ms ease;
 }
 
 .prosody-play-btn:hover {
-  opacity: 0.92;
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .prosody-play-btn:active {
@@ -1665,14 +1666,9 @@ a:hover {
 
 .ninada-speak-btn:hover,
 .ninada-speak-btn.is-active {
-  background: var(--data-hue);
-  border-color: var(--data-hue);
-  color: #ffffff;
-}
-
-[data-theme="dark"] .ninada-speak-btn:hover,
-[data-theme="dark"] .ninada-speak-btn.is-active {
-  color: #0a0a0a;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
 }
 
 @keyframes ninadaRotate {
