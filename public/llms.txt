@@ -3,7 +3,7 @@
 > Classical Sanskrit–English scholarly lexicon with 688 cited headwords from Amarakośa, Pāṇinīya Dhātupāṭha, Ekākṣara Mātṛkā, and Śrī Madhvācārya's Sarvamūla sūtras, paired with client-side 24,000 Hz Ninada v5.1 neural Sanskrit recitation.
 
 ## Links
-- [Live Application](https://h3manth.com/fun/tattvakosha/): Editorial overview, Live Ekākṣara 24 kHz Auditioner, and three-pane Lexicon Workbench (`#lexicon`)
+- [Live Application](https://h3manth.com/fun/tattvakosha/): Editorial overview, interactive Ekākṣara 24 kHz reader, and three-pane Lexicon Workbench (`#lexicon`)
 - [Source Repository](https://github.com/hemanth/tattvakosha): TypeScript, React, dataset compilers, and prosody/search engines
 - [Hugging Face Dataset](https://huggingface.co/datasets/gnumanth/tattvakosha): `gnumanth/tattvakosha` (Parquet, JSONL, CSV)
 - [Ninada 24 kHz Sanskrit TTS](https://huggingface.co/gnumanth/ninada): In-browser ONNX neural Sanskrit speech model (`gnumanth/ninada`)

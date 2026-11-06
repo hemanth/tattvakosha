@@ -20,7 +20,7 @@ if ($action === 'markdown') {
     if (!$htmlRaw) $htmlRaw = '';
     $frontmatter = "---\n"
         . "title: \"Tattvakośa · तत्त्वकोशः | Classical Sanskrit Lexicon\"\n"
-        . "description: \"688 classical Sanskrit headwords defined from Amarakośa and Śrī Madhvācārya's Sarvamūla sūtras, recited in your browser at 24 kHz.\"\n"
+        . "description: \"688 classical Sanskrit headwords drawn from Amarakośa and Śrī Madhvācārya's Sarvamūla sūtras, recited in your browser at 24 kHz.\"\n"
         . "url: \"https://h3manth.com/fun/tattvakosha/\"\n"
         . "---\n\n";
     $fullMd = $frontmatter . $mdBody;

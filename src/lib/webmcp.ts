@@ -19,12 +19,20 @@ interface ModelContextNavigator {
   };
 }
 
+interface WindowWithTattvakoshaWebMcp extends Window {
+  __tattvakoshaWebMcpBootstrapped?: boolean;
+  __tattvakoshaWebMcp?: {
+    search: (args: Record<string, unknown>) => Promise<unknown>;
+    entry: (args: Record<string, unknown>) => Promise<unknown>;
+    open: (args: Record<string, unknown>) => Promise<unknown>;
+    pronounce: (args: Record<string, unknown>) => Promise<unknown>;
+  };
+}
+
 let registered = false;
 
 export function registerTattvakoshaWebMcp(): void {
-  if (registered || typeof navigator === "undefined") return;
-  const mc = (navigator as unknown as ModelContextNavigator).modelContext;
-  if (!mc || typeof mc.registerTool !== "function") return;
+  if (registered || typeof window === "undefined" || typeof navigator === "undefined") return;
   registered = true;
 
   const dataset = rawDataset as unknown as KoshaDataset;
@@ -34,6 +42,69 @@ export function registerTattvakoshaWebMcp(): void {
     if (!searchIndex) searchIndex = buildSearchIndex(dataset.entries);
     return searchIndex;
   };
+
+  const searchFn = async (args: Record<string, unknown>) => {
+    const query = String(args.query || "").trim();
+    const pillar = String(args.pillar || "all");
+    const limit = Math.max(1, Math.min(30, Number(args.limit || 10)));
+    const matches = searchKosha(getIndex(), query).filter(
+      (e) => pillar === "all" || e.pillar === pillar
+    );
+    return {
+      query,
+      count: Math.min(limit, matches.length),
+      totalMatched: matches.length,
+      results: matches.slice(0, limit).map((e) => ({
+        id: e.id,
+        deva: e.deva,
+        iast: e.iast,
+        pillar: e.pillar,
+        domain: e.domain,
+        englishGlosses: e.englishGlosses,
+        meaningShort: e.meaningShort,
+        source: e.source
+      }))
+    };
+  };
+
+  const entryFn = async (args: Record<string, unknown>) => {
+    const id = String(args.id || "").trim();
+    const entry = byId.get(id);
+    if (!entry) {
+      return { error: `Entry '${id}' not found` };
+    }
+    return {
+      ...entry,
+      prosody: scanSanskritProsody(entry.deva)
+    };
+  };
+
+  const openFn = async (args: Record<string, unknown>) => {
+    const id = String(args.id || "lexicon").trim();
+    window.location.hash = `#${id}`;
+    return { opened: id, url: window.location.href };
+  };
+
+  const pronounceFn = async (args: Record<string, unknown>) => {
+    const text = String(args.text || "").trim();
+    const voice: NinadaGender = args.voice === "female" ? "female" : "male";
+    setNinadaVoiceGender(voice);
+    await speakSanskritWithNinada(text, `webmcp-${Date.now()}`);
+    return { spoken: text, voice, sampleRateHz: 24000 };
+  };
+
+  const win = window as unknown as WindowWithTattvakoshaWebMcp;
+  win.__tattvakoshaWebMcp = {
+    search: searchFn,
+    entry: entryFn,
+    open: openFn,
+    pronounce: pronounceFn
+  };
+
+  if (win.__tattvakoshaWebMcpBootstrapped) return;
+  const mc = (navigator as unknown as ModelContextNavigator).modelContext;
+  if (!mc || typeof mc.registerTool !== "function") return;
+  win.__tattvakoshaWebMcpBootstrapped = true;
 
   const defineTool = (
     name: string,
@@ -71,29 +142,7 @@ export function registerTattvakoshaWebMcp(): void {
       },
       required: ["query"]
     },
-    async (args) => {
-      const query = String(args.query || "").trim();
-      const pillar = String(args.pillar || "all");
-      const limit = Math.max(1, Math.min(30, Number(args.limit || 10)));
-      const matches = searchKosha(getIndex(), query).filter(
-        (e) => pillar === "all" || e.pillar === pillar
-      );
-      return {
-        query,
-        count: Math.min(limit, matches.length),
-        totalMatched: matches.length,
-        results: matches.slice(0, limit).map((e) => ({
-          id: e.id,
-          deva: e.deva,
-          iast: e.iast,
-          pillar: e.pillar,
-          domain: e.domain,
-          englishGlosses: e.englishGlosses,
-          meaningShort: e.meaningShort,
-          source: e.source
-        }))
-      };
-    }
+    searchFn
   );
 
   defineTool(
@@ -106,17 +155,7 @@ export function registerTattvakoshaWebMcp(): void {
       },
       required: ["id"]
     },
-    async (args) => {
-      const id = String(args.id || "").trim();
-      const entry = byId.get(id);
-      if (!entry) {
-        return { error: `Entry '${id}' not found` };
-      }
-      return {
-        ...entry,
-        prosody: scanSanskritProsody(entry.deva)
-      };
-    }
+    entryFn
   );
 
   defineTool(
@@ -129,16 +168,12 @@ export function registerTattvakoshaWebMcp(): void {
       },
       required: ["id"]
     },
-    async (args) => {
-      const id = String(args.id || "lexicon").trim();
-      window.location.hash = `#${id}`;
-      return { opened: id, url: window.location.href };
-    }
+    openFn
   );
 
   defineTool(
     "pronounce_sanskrit",
-    "Synthesize and recite a Sanskrit headword or sūtra at 24,000 Hz in the browser using Ninada v5.1 ONNX.",
+    "Recite a Sanskrit headword or sūtra at 24,000 Hz in the browser using Ninada v5.1 ONNX.",
     {
       type: "object",
       properties: {
@@ -147,12 +182,6 @@ export function registerTattvakoshaWebMcp(): void {
       },
       required: ["text"]
     },
-    async (args) => {
-      const text = String(args.text || "").trim();
-      const voice: NinadaGender = args.voice === "female" ? "female" : "male";
-      setNinadaVoiceGender(voice);
-      await speakSanskritWithNinada(text, `webmcp-${Date.now()}`);
-      return { spoken: text, voice, sampleRateHz: 24000 };
-    }
+    pronounceFn
   );
 }

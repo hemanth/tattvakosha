@@ -6,7 +6,7 @@
     <title>Tattvakośa · तत्त्वकोशः | Classical Sanskrit Lexicon</title>
     <meta
       name="description"
-      content="688 classical Sanskrit headwords defined from Amarakośa, Ekākṣara Mātṛkā, and Śrī Madhvācārya's Sarvamūla sūtras, recited in your browser at 24 kHz."
+      content="688 classical Sanskrit headwords drawn from Amarakośa, Ekākṣara Mātṛkā, and Śrī Madhvācārya's Sarvamūla sūtras, recited in your browser at 24 kHz."
     />
     <meta name="theme-color" content="#f4f3f1" />
     <link rel="canonical" href="https://h3manth.com/fun/tattvakosha/" />
@@ -20,7 +20,9 @@
       content="688 classical headwords from Amarakośa and Śrī Madhvācārya's Sarvamūla sūtras, with padaccheda splits and in-browser 24 kHz Ninada recitation."
     />
     <meta property="og:url" content="https://h3manth.com/fun/tattvakosha/" />
-    <meta property="og:image" content="https://h3manth.com/fun/tattvakosha/og-image.png" />
+    <meta property="og:image" content="https://h3manth.com/fun/tattvakosha/og-image.png?v=2" />
+    <meta property="og:image:secure_url" content="https://h3manth.com/fun/tattvakosha/og-image.png?v=2" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta
@@ -33,9 +35,13 @@
     <meta name="twitter:title" content="Tattvakośa · तत्त्वकोशः | Classical Sanskrit Lexicon" />
     <meta
       name="twitter:description"
-      content="688 classical headwords from Amarakośa and Śrī Madhvācārya's Sarvamūla sūtras, recited in-browser at 24 kHz."
+      content="688 classical headwords drawn from Amarakośa and Śrī Madhvācārya's Sarvamūla sūtras, recited in your browser at 24 kHz."
     />
-    <meta name="twitter:image" content="https://h3manth.com/fun/tattvakosha/og-image.png" />
+    <meta name="twitter:image" content="https://h3manth.com/fun/tattvakosha/og-image.png?v=2" />
+    <meta
+      name="twitter:image:alt"
+      content="Tattvakośa: Sanskrit cited, spoken whole. 688 classical headwords recited in-browser at 24 kHz."
+    />
 
     <!-- Agent-Ready Discovery Links (RFC 9727 / SEP-1649 / A2A / Agent Skills / llms.txt) -->
     <link rel="api-catalog" href="./.well-known/api-catalog" type="application/linkset+json" />
@@ -45,6 +51,7 @@
     <link rel="describedby" href="./.well-known/agent-card.json" type="application/json" />
     <link rel="describedby" href="./llms.txt" type="text/plain" />
     <link rel="llms" href="./llms.txt" type="text/plain" />
+    <link rel="ai-catalog" href="./.well-known/ai-catalog.json" type="application/json" />
 
     <script>document.documentElement.classList.add("js");</script>
     <link
@@ -66,8 +73,8 @@
         "name": "Tattvakośa",
         "alternateName": "तत्त्वकोशः",
         "url": "https://h3manth.com/fun/tattvakosha/",
-        "image": "https://h3manth.com/fun/tattvakosha/og-image.png",
-        "description": "Classical Sanskrit lexicon with 688 cited headwords from Amarakośa, Pāṇinīya Dhātupāṭha, Ekākṣara Mātṛkā, and Śrī Madhvācārya's Sarvamūla sūtras, recited in-browser at 24 kHz via Ninada ONNX.",
+        "image": "https://h3manth.com/fun/tattvakosha/og-image.png?v=2",
+        "description": "Classical Sanskrit lexicon with 688 cited headwords drawn from Amarakośa, Pāṇinīya Dhātupāṭha, Ekākṣara Mātṛkā, and Śrī Madhvācārya's Sarvamūla sūtras, recited in-browser at 24 kHz via Ninada ONNX.",
         "applicationCategory": "ReferenceApplication",
         "operatingSystem": "Web",
         "inLanguage": ["en", "sa"],
@@ -80,6 +87,122 @@
           "Client-side 24,000 Hz Ninada v5.1 ONNX neural Sanskrit speech synthesis"
         ]
       }
+    </script>
+
+    <!-- WebMCP: Immediate Model Context Protocol Tool Registration -->
+    <script>
+      (function () {
+        function registerWebMcp() {
+          var mc =
+            (typeof navigator !== "undefined" && navigator.modelContext) ||
+            (typeof document !== "undefined" && document.modelContext);
+          if (!mc || typeof mc.registerTool !== "function" || window.__tattvakoshaWebMcpBootstrapped) {
+            return;
+          }
+          window.__tattvakoshaWebMcpBootstrapped = true;
+          var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+          var opts = controller ? { signal: controller.signal } : undefined;
+          var tools = [
+            {
+              name: "search_tattvakosha",
+              title: "Search Tattvakośa Sanskrit Lexicon",
+              description: "Search 688 classical Sanskrit headwords by Devanāgarī, IAST, ASCII phonetic, or English gloss.",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  query: { type: "string", description: "Devanāgarī, IAST, ASCII, or English search query" },
+                  pillar: { type: "string", enum: ["all", "kosha", "lakshana", "ekakshara", "nirukti"] },
+                  limit: { type: "number" }
+                },
+                required: ["query"]
+              },
+              execute: async function (args) {
+                if (window.__tattvakoshaWebMcp && window.__tattvakoshaWebMcp.search) {
+                  return window.__tattvakoshaWebMcp.search(args || {});
+                }
+                var q = encodeURIComponent(String((args && args.query) || ""));
+                var p = encodeURIComponent(String((args && args.pillar) || "all"));
+                var l = encodeURIComponent(String((args && args.limit) || 10));
+                var res = await fetch("./api/search?q=" + q + "&pillar=" + p + "&limit=" + l);
+                return res.json();
+              },
+              annotations: { readOnlyHint: true }
+            },
+            {
+              name: "get_sanskrit_entry",
+              title: "Get Tattvakośa Headword Entry",
+              description: "Retrieve the complete scholarly entry, pramāṇa sūtra, padaccheda split, Ekākṣara registers, prosody scan, and citation for a headword ID.",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  id: { type: "string", description: "Entry ID such as jiva, ekakshara-a, pramana, surya" }
+                },
+                required: ["id"]
+              },
+              execute: async function (args) {
+                if (window.__tattvakoshaWebMcp && window.__tattvakoshaWebMcp.entry) {
+                  return window.__tattvakoshaWebMcp.entry(args || {});
+                }
+                var id = encodeURIComponent(String((args && args.id) || ""));
+                var res = await fetch("./api/entry?id=" + id);
+                return res.json();
+              },
+              annotations: { readOnlyHint: true }
+            },
+            {
+              name: "open_sanskrit_entry",
+              title: "Open Headword in Lexicon Workbench",
+              description: "Open a specific Sanskrit headword inside the Tattvakośa lexicon workbench.",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  id: { type: "string", description: "Entry ID to open (or 'lexicon' for the default reader)" }
+                },
+                required: ["id"]
+              },
+              execute: async function (args) {
+                var id = String((args && args.id) || "lexicon").trim();
+                window.location.hash = "#" + id;
+                return { opened: id, url: window.location.href };
+              }
+            },
+            {
+              name: "pronounce_sanskrit",
+              title: "Pronounce Classical Sanskrit at 24 kHz",
+              description: "Recite a Sanskrit headword or sūtra at 24,000 Hz in the browser using Ninada v5.1 ONNX.",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  text: { type: "string", description: "Devanāgarī Sanskrit text to pronounce" },
+                  voice: { type: "string", enum: ["male", "female"] }
+                },
+                required: ["text"]
+              },
+              execute: async function (args) {
+                if (window.__tattvakoshaWebMcp && window.__tattvakoshaWebMcp.pronounce) {
+                  return window.__tattvakoshaWebMcp.pronounce(args || {});
+                }
+                return { queued: false, error: "Audio studio still initializing; retry in a moment." };
+              }
+            }
+          ];
+          for (var i = 0; i < tools.length; i++) {
+            var t = tools[i];
+            t.parameters = t.inputSchema;
+            t.handler = t.execute;
+            try {
+              if (opts) mc.registerTool(t, opts);
+              else mc.registerTool(t);
+            } catch (_) {
+              try { mc.registerTool(t); } catch (__) {}
+            }
+          }
+        }
+        registerWebMcp();
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", registerWebMcp);
+        }
+      })();
     </script>
   </head>
   <body>

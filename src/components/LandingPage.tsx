@@ -95,8 +95,8 @@ const MOMENTS = [
     space: 38
   },
   {
-    title: "Spoken at 24 kHz",
-    desc: "Ninada v5.1 synthesizes classical Sanskrit directly in the browser via ONNX with distinct male and female recitals.",
+    title: "Recited at 24 kHz",
+    desc: "Ninada v5.1 recites classical Sanskrit directly in the browser via ONNX, with male and female voices.",
     img: "landing/ui-reader.jpg",
     w: 2200,
     h: 1375,
@@ -365,7 +365,7 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
 
             <div className="lp-hero-copy">
               <p className="lp-lead lp-hero-enter" style={{ "--enter-i": 2 } as CSSProperties}>
-                688 classical headwords defined from Amarakośa and Śrī Madhvācārya’s
+                688 classical headwords drawn from Amarakośa and Śrī Madhvācārya’s
                 Sarvamūla sūtras, recited in your browser at 24&nbsp;kHz.
               </p>
               <div className="lp-hero-actions lp-hero-enter" style={{ "--enter-i": 3 } as CSSProperties}>
@@ -377,14 +377,14 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                   Open the lexicon
                 </button>
                 <a href="#ekakshara" className="lp-plain-link">
-                  Audition a syllable
+                  Hear an Ekākṣara
                 </a>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Section 1 : Showcase: Frame Run, One Lifted + Live Ekākṣara Auditioner */}
+        {/* Section 1 : Showcase: Frame Run, One Lifted + Live Ekākṣara Reader */}
         <section
           id="ekakshara"
           className="lp-section-toned"
@@ -398,16 +398,16 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                 data-lp-reveal
                 style={{ "--stagger": 0 } as CSSProperties}
               >
-                Speak a single syllable
+                One syllable, four meanings
               </h2>
               <p
                 className="lp-body"
                 data-lp-reveal
                 style={{ "--stagger": 1 } as CSSProperties}
               >
-                In Sanskrit kośa literature, a single phoneme is already a complete word.
-                Tap any syllable below to hear Ninada synthesize it at 24&nbsp;kHz and read
-                its four simultaneous exegetical registers.
+                In the Ekākṣara tradition, a single syllable stands as a complete word.
+                Pick any syllable below to hear it recited at 24&nbsp;kHz and compare its
+                meanings across Vedānta, Vedic deity lore, Amarakośa, and grammar.
               </p>
 
               {/* One Live Thing (data-ui) */}
@@ -417,7 +417,7 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                   data-ui
                   data-lp-reveal
                   style={{ "--stagger": 2 } as CSSProperties}
-                  aria-label="Live Ekākṣara syllable auditioner"
+                  aria-label="Interactive Ekākṣara reader and 24 kHz audio player"
                 >
                   <div className="lp-syllable-bar" role="group" aria-label="Choose a Sanskrit monosyllable">
                     {featuredSyllables.map((item) => {
@@ -442,7 +442,9 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                       <strong className="lp-audition-deva" lang="sa">
                         {activeSyl.deva}
                       </strong>
-                      <span className="lp-audition-iast">/{activeSyl.iast}/</span>
+                      <span className="lp-audition-iast">
+                        /{shortSyllableGlyph(activeSyl.iast)}/
+                      </span>
                     </div>
 
                     <div className="lp-audition-controls">
@@ -588,9 +590,9 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                 data-lp-reveal
                 style={{ "--stagger": 4 } as CSSProperties}
               >
-                Sourced from Śrī Madhvācārya’s Tantrasārasaṅgraha (1.10), Amarasiṃha’s
-                Nānārthavarga, and Pāṇinian nipāta rules, uniting theological hierarchy
-                with classical lexicography.
+                Drawn from Śrī Madhvācārya’s Tantrasārasaṅgraha (1.10), Amarasiṃha’s
+                Nānārthavarga, and Pāṇini’s nipāta sūtras, where divine names and
+                grammatical particles share the same syllable.
               </p>
             </div>
           </div>
@@ -748,7 +750,7 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                   <dt className="lp-stat-num">688</dt>
                   <dd className="lp-stat-text">
                     Classical headwords verified with Devanāgarī, IAST transliteration,
-                    grammatical gender, and structured English equivalents.
+                    grammatical gender, and English glosses.
                   </dd>
                 </div>
 
@@ -759,7 +761,7 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                 >
                   <dt className="lp-stat-num">296</dt>
                   <dd className="lp-stat-text">
-                    Distinct śāstric source locators spanning Amarakośa, Pāṇini’s
+                    Distinct śāstric source locators across Amarakośa, Pāṇini’s
                     Aṣṭādhyāyī, Yāska’s Nirukta, and the Sarvamūla corpus.
                   </dd>
                 </div>
@@ -771,8 +773,8 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                 >
                   <dt className="lp-stat-num">70</dt>
                   <dd className="lp-stat-text">
-                    Monosyllabic Ekākṣara entries unfolding sovereign Viṣṇu-nāma, Vedic
-                    devatā hierarchy, nānārtha polysemy, and avyaya grammar.
+                    Monosyllabic Ekākṣara entries pairing Viṣṇu-nāma exegesis, Vedic
+                    devatā hierarchy, Amarakośa polysemy, and particle grammar.
                   </dd>
                 </div>
 
@@ -783,8 +785,8 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                 >
                   <dt className="lp-stat-num">17</dt>
                   <dd className="lp-stat-text">
-                    Thematic vargas arranged from Tattva, Pramāṇa, and Loka down to verbal
-                    dhātus, numerals, and indeclinable particles.
+                    Thematic vargas arranged from Tattva, Pramāṇa, and Loka to verbal
+                    dhātus, numerals, and indeclinables.
                   </dd>
                 </div>
 
@@ -795,8 +797,8 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                 >
                   <dt className="lp-stat-num">24&nbsp;kHz</dt>
                   <dd className="lp-stat-text">
-                    Client-side ONNX neural Sanskrit synthesis via Ninada v5.1 with male and
-                    female studio voices and zero server round-trips.
+                    In-browser ONNX Sanskrit recitation via Ninada v5.1, with male and
+                    female voices and no server calls.
                   </dd>
                 </div>
               </dl>
@@ -853,7 +855,7 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
               style={{ "--stagger": 1 } as CSSProperties}
             >
               Search in Devanāgarī, IAST, or English, inspect every padaccheda split, and
-              hear any classical sūtra spoken aloud in your browser.
+              hear any classical sūtra read aloud in your browser.
             </p>
             <button
               type="button"

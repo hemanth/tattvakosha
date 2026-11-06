@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "name": "Tattvakośa · तत्त्वकोशः",
+  "description": "Classical Sanskrit lexicon with 688 cited headwords drawn from Amarakośa, Ekākṣara Mātṛkā, and Śrī Madhvācārya's Sarvamūla sūtras, with in-browser 24 kHz Ninada recitation.",
+  "url": "https://h3manth.com/fun/tattvakosha/",
+  "resources": [
+    {
+      "type": "llms-txt",
+      "url": "https://h3manth.com/fun/tattvakosha/llms.txt",
+      "description": "Structured corpus overview and query guide for autonomous agents"
+    },
+    {
+      "type": "openapi",
+      "url": "https://h3manth.com/fun/tattvakosha/openapi.json",
+      "description": "OpenAPI 3.1 specification for Tattvakośa search, entry, and stats endpoints"
+    },
+    {
+      "type": "mcp-server-card",
+      "url": "https://h3manth.com/fun/tattvakosha/.well-known/mcp/server-card.json",
+      "description": "SEP-1649 MCP Server Card for Tattvakośa"
+    },
+    {
+      "type": "a2a-agent-card",
+      "url": "https://h3manth.com/fun/tattvakosha/.well-known/agent-card.json",
+      "description": "A2A v1.0.0 Agent Card for Tattvakośa"
+    },
+    {
+      "type": "agent-skills",
+      "url": "https://h3manth.com/fun/tattvakosha/.well-known/agent-skills/index.json",
+      "description": "Agent Skills RFC v0.2.0 manifest"
+    }
+  ]
+}

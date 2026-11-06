@@ -5,7 +5,7 @@ Options -Indexes
   Header set Cross-Origin-Resource-Policy "cross-origin"
   Header set content-signal "ai-train=yes, search=yes, ai-input=yes"
   Header append Vary "Accept"
-  Header add Link "</fun/tattvakosha/.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </fun/tattvakosha/.well-known/agent-skills/index.json>; rel=\"service-desc\"; type=\"application/json\", </fun/tattvakosha/.well-known/mcp/server-card.json>; rel=\"describedby\"; type=\"application/json\", </fun/tattvakosha/.well-known/agent-card.json>; rel=\"describedby\"; type=\"application/json\", </fun/tattvakosha/llms.txt>; rel=\"describedby\"; type=\"text/plain\", </fun/tattvakosha/openapi.json>; rel=\"service-desc\"; type=\"application/json\""
+  Header add Link "</fun/tattvakosha/.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </fun/tattvakosha/.well-known/agent-skills/index.json>; rel=\"service-desc\"; type=\"application/json\", </fun/tattvakosha/.well-known/mcp/server-card.json>; rel=\"describedby\"; type=\"application/json\", </fun/tattvakosha/.well-known/agent-card.json>; rel=\"describedby\"; type=\"application/json\", </fun/tattvakosha/llms.txt>; rel=\"describedby\"; type=\"text/plain\", </fun/tattvakosha/openapi.json>; rel=\"service-desc\"; type=\"application/json\", </fun/tattvakosha/.well-known/ai-catalog.json>; rel=\"ai-catalog\"; type=\"application/json\""
 </IfModule>
 
 <IfModule mod_rewrite.c>
