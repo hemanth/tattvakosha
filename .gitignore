@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.taste-skill/
+assets/*.jpg
+assets/*.png
+assets/*.webp
+*.tsbuildinfo
+.DS_Store

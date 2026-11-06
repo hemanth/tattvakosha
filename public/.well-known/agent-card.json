@@ -1,0 +1,84 @@
+{
+  "$schema": "https://a2a-protocol.org/schemas/agent-card/v1.0.0.json",
+  "schemaVersion": "1.0.0",
+  "name": "Tattvakośa",
+  "description": "Classical Sanskrit–English scholarly lexicon with 688 cited headwords from Amarakośa, Pāṇinīya Dhātupāṭha, Ekākṣara Mātṛkā, and Śrī Madhvācārya's Sarvamūla sūtras, plus 24 kHz Ninada v5.1 neural Sanskrit recitation.",
+  "url": "https://h3manth.com/fun/tattvakosha/",
+  "version": "2.0.0",
+  "provider": {
+    "organization": "Hemanth HM",
+    "url": "https://h3manth.com"
+  },
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "webmcp": true,
+    "tools": [
+      {
+        "name": "search_tattvakosha",
+        "description": "Search 688 classical Sanskrit headwords by Devanāgarī, IAST, ASCII phonetic, or English gloss.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Devanāgarī, IAST, ASCII Roman, or English search query"
+            },
+            "pillar": {
+              "type": "string",
+              "enum": ["all", "kosha", "lakshana", "ekakshara", "nirukti"],
+              "default": "all"
+            },
+            "limit": {
+              "type": "integer",
+              "default": 12
+            }
+          },
+          "required": ["query"]
+        }
+      },
+      {
+        "name": "get_sanskrit_entry",
+        "description": "Retrieve the complete scholarly entry, sūtra, padaccheda split, fourfold Ekākṣara registers, and grantha citation for an entry ID.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Headword ID (e.g. jiva, ekakshara-a, pramana, surya)"
+            }
+          },
+          "required": ["id"]
+        }
+      },
+      {
+        "name": "pronounce_sanskrit",
+        "description": "Synthesize and play classical Sanskrit text in the browser at 24,000 Hz via Ninada v5.1 ONNX.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Devanāgarī Sanskrit headword or sūtra"
+            },
+            "voice": {
+              "type": "string",
+              "enum": ["male", "female"],
+              "default": "male"
+            }
+          },
+          "required": ["text"]
+        }
+      }
+    ]
+  },
+  "communication": {
+    "preferredChannel": "https",
+    "endpoints": {
+      "search": "https://h3manth.com/fun/tattvakosha/api/search",
+      "entry": "https://h3manth.com/fun/tattvakosha/api/entry",
+      "stats": "https://h3manth.com/fun/tattvakosha/api/stats",
+      "openapi": "https://h3manth.com/fun/tattvakosha/openapi.json"
+    }
+  }
+}

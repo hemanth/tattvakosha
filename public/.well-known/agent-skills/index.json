@@ -1,0 +1,14 @@
+{
+  "$schema": "https://agentskills.io/schemas/index/v0.2.0.json",
+  "version": "0.2.0",
+  "skills": [
+    {
+      "name": "tattvakosha-lexicon",
+      "type": "skill-md",
+      "description": "Search and cite 688 classical Sanskrit headwords across Amarakośa, Pāṇinīya Dhātupāṭha, Ekākṣara Mātṛkā, and Śrī Madhvācārya's Sarvamūla lakṣaṇas, with padaccheda splits and 24 kHz Ninada audio.",
+      "url": "https://h3manth.com/fun/tattvakosha/.well-known/agent-skills/tattvakosha-lexicon/SKILL.md",
+      "entrypoint": "/fun/tattvakosha/.well-known/agent-skills/tattvakosha-lexicon/SKILL.md",
+      "sha256": "4b7a02377931f8538fca18c1dfdabc85f7557cde9adb88f2d1d9ba8c90ea660d"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+# Tattvakośa (तत्त्वकोशः) — Complete Agent & Developer Reference
+
+> Classical Sanskrit–English scholarly lexicon (688 headwords, 296 śāstric citations, 17 thematic vargas) and in-browser 24 kHz Ninada v5.1 neural Sanskrit audio studio.
+
+## Canonical Endpoints
+- **Web App & Markdown Negotiation**: `https://h3manth.com/fun/tattvakosha/`
+- **Direct Lexicon Workbench**: `https://h3manth.com/fun/tattvakosha/#lexicon`
+- **Direct Headword Deep-Link**: `https://h3manth.com/fun/tattvakosha/#<entry-id>` (e.g. `#jiva`, `#ekakshara-a`, `#pramana`, `#brahman`)
+- **OpenAPI 3.1 Spec**: `https://h3manth.com/fun/tattvakosha/openapi.json`
+- **RFC 9727 API Catalog**: `https://h3manth.com/fun/tattvakosha/.well-known/api-catalog`
+- **A2A Agent Card v1.0.0**: `https://h3manth.com/fun/tattvakosha/.well-known/agent-card.json`
+- **MCP Server Card (SEP-1649)**: `https://h3manth.com/fun/tattvakosha/.well-known/mcp/server-card.json`
+- **Agent Skills Index (v0.2.0)**: `https://h3manth.com/fun/tattvakosha/.well-known/agent-skills/index.json`
+- **Authentication Policy**: `https://h3manth.com/fun/tattvakosha/auth.md` (`NoAuth`, public read)
+- **Full JSON Corpus**: `https://h3manth.com/fun/tattvakosha/data/tattvakosha.json`
+- **JSONL Stream**: `https://h3manth.com/fun/tattvakosha/data/tattvakosha.jsonl`
+
+## HTTP JSON API Examples
+
+### 1. Search Headwords (`GET /api/search`)
+Matches Devanāgarī (`जीव`), IAST (`jīvaḥ`), loose Harvard-Kyoto/phonetic ASCII (`pramana`, `krishna`), or English glosses (`consciousness`, `lotus`).
+
+```bash
+curl -s "https://h3manth.com/fun/tattvakosha/api/search?q=jiva&limit=5"
+```
+
+Optional query parameters:
+- `q` (string, required): Search term in Devanāgarī, IAST, ASCII, or English
+- `pillar` (string, optional): `all` | `kosha` | `lakshana` | `ekakshara` | `nirukti`
+- `limit` (integer, optional, default `12`, max `50`)
+
+### 2. Inspect Single Headword (`GET /api/entry`)
+Returns the complete scholarly record including Devanāgarī & IAST sūtra, *padaccheda* morphological breakdown, structured senses, fourfold *Ekākṣara* registers (when `pillar === "ekakshara"`), grammatical metadata, and classical grantha citation.
+
+```bash
+curl -s "https://h3manth.com/fun/tattvakosha/api/entry?id=ekakshara-a"
+```
+
+### 3. Corpus Statistics (`GET /api/stats`)
+Returns exact counts per lexical register (`kosha`: 404, `lakshana`: 154, `ekakshara`: 70, `nirukti`: 60) and all 17 thematic *vargas*.
+
+```bash
+curl -s "https://h3manth.com/fun/tattvakosha/api/stats"
+```
+
+## Entry Data Contract (`KoshaEntry`)
+- `id`: Stable URL-safe slug (e.g. `"jiva"`, `"ekakshara-a"`, `"dhatu-bhu"`)
+- `deva`: Canonical Devanāgarī headword (`"जीवः"`)
+- `iast`: ISO-15919 / IAST transliteration (`"jīvaḥ"`)
+- `pillar`: `"kosha" | "lakshana" | "ekakshara" | "nirukti"`
+- `domain`: Thematic *varga* (17 classical categories)
+- `englishGlosses`: Array of concise English equivalents
+- `lakshanaDeva` / `lakshanaIast`: Quoted classical Sanskrit authority sūtra or Amarakośa verse
+- `padaccheda`: Array of `{ deva, iast, gloss }` compound/sandhi splits
+- `ekaksharaSenses`: Four-register array (`parama-mukhya`, `taratamya-daivata`, `amarakosha-nanartha`, `vyakarana-avyaya`) on monosyllabic entries
+- `citation`: Exact grantha name and kāṇḍa/adhyāya/sūtra locator
+- `related`: Cross-referenced entry IDs
+
+## Browser WebMCP Tools
+When loaded in a WebMCP-capable agentic browser (`navigator.modelContext`), Tattvakośa registers:
+1. `search_tattvakosha({ query, pillar, limit })`
+2. `get_sanskrit_entry({ id })`
+3. `open_sanskrit_entry({ id, pillar, viewMode })`
+4. `pronounce_sanskrit({ text, voice })` — Synthesizes 24,000 Hz studio Sanskrit audio via Ninada v5.1 ONNX (`male` or `female`).

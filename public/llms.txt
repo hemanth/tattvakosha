@@ -1,0 +1,25 @@
+# Tattvakośa (तत्त्वकोशः)
+
+> Classical Sanskrit–English scholarly lexicon with 688 cited headwords from Amarakośa, Pāṇinīya Dhātupāṭha, Ekākṣara Mātṛkā, and Śrī Madhvācārya's Sarvamūla sūtras, paired with client-side 24,000 Hz Ninada v5.1 neural Sanskrit recitation.
+
+## Links
+- [Live Application](https://h3manth.com/fun/tattvakosha/): Editorial overview, Live Ekākṣara 24 kHz Auditioner, and three-pane Lexicon Workbench (`#lexicon`)
+- [Source Repository](https://github.com/hemanth/tattvakosha): TypeScript, React, dataset compilers, and prosody/search engines
+- [Hugging Face Dataset](https://huggingface.co/datasets/gnumanth/tattvakosha): `gnumanth/tattvakosha` (Parquet, JSONL, CSV)
+- [Ninada 24 kHz Sanskrit TTS](https://huggingface.co/gnumanth/ninada): In-browser ONNX neural Sanskrit speech model (`gnumanth/ninada`)
+- [OpenAPI 3.1 Specification](https://h3manth.com/fun/tattvakosha/openapi.json): Public JSON query endpoints (`/api/search`, `/api/entry`, `/api/stats`)
+- [Full Corpus & Agent Reference](https://h3manth.com/fun/tattvakosha/llms-full.txt): Detailed register architecture, JSON schemas, and API examples
+- [Author](https://h3manth.com): Hemanth HM
+
+## Lexical Registers (688 Entries · 296 Grantha Citations · 17 Vargas)
+- **Amarakośa · Kośa (404 entries)**: Classical nominal synonyms (*Nāmaliṅgānuśāsana*), 70 Pāṇinian verbal roots (*Dhātupāṭha*), numerals, pronouns, adjectives, and indeclinables (*avyayas*).
+- **Śāstra · Lakṣaṇa (154 entries)**: Tattvavāda definitions of *Pramāṇa*, *Tattva*, *Padārtha*, and *Sādhana-Mukti* from Śrī Madhvācārya's *Sarvamūla Granthāḥ* and Śrī Jayatīrtha's commentaries, with full *padaccheda* analysis.
+- **Monosyllabic · Ekākṣara (70 entries)**: All 51 *Mātṛkā* syllables (`अ`–`क्ष`) plus 19 *Amarakośa Nānārtha* monosyllables (`गौः`, `भूः`, `मा`, `श्रीः`, `वाक्`, `सत्`, `चित्`, `खम्`), stratified across four simultaneous registers (*Parama-Mukhya*, *Tāratamya-Daivata*, *Amarakośa-Nānārtha*, *Vyākaraṇa-Avyaya*).
+- **Etymology · Nirukti (60 entries)**: Vedic and *Bhagavan-nāma* derivations from Yāska's *Nirukta*, *Ṛgbhāṣyam*, and *Mahābhāratatātparyanirṇaya*.
+
+## Agent & API Access
+- **Markdown Content Negotiation**: Send `Accept: text/markdown` to `https://h3manth.com/fun/tattvakosha/` for YAML-frontmatter Markdown with `x-markdown-tokens`.
+- **Search Endpoint**: `GET https://h3manth.com/fun/tattvakosha/api/search?q=jiva&pillar=all&limit=10`
+- **Entry Endpoint**: `GET https://h3manth.com/fun/tattvakosha/api/entry?id=jiva`
+- **Raw Dataset**: `GET https://h3manth.com/fun/tattvakosha/data/tattvakosha.json` and `tattvakosha.jsonl`
+- **Browser WebMCP**: Exposes `search_tattvakosha`, `get_sanskrit_entry`, `open_sanskrit_entry`, and `pronounce_sanskrit` via `navigator.modelContext`.

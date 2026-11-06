@@ -1,0 +1,17 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/server-card/v1.json",
+  "name": "tattvakosha",
+  "version": "2.0.0",
+  "description": "Classical Sanskrit lexicon query tools across Amarakośa, Sarvamūla lakṣaṇas, and Ekākṣara Mātṛkā, plus in-browser WebMCP 24 kHz Ninada Sanskrit recitation.",
+  "homepage": "https://h3manth.com/fun/tattvakosha/",
+  "transport": {
+    "type": "webmcp",
+    "endpoint": "https://h3manth.com/fun/tattvakosha/",
+    "openapi": "https://h3manth.com/fun/tattvakosha/openapi.json"
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": false
+  }
+}

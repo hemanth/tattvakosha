@@ -1,0 +1,123 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tattvakośa Classical Sanskrit Lexicon API",
+    "version": "2.0.0",
+    "description": "Search and retrieve 688 classical Sanskrit headwords with Amarakośa synonyms, Śrī Madhvācārya's Sarvamūla lakṣaṇas, Pāṇinian padaccheda splits, and fourfold Ekākṣara registers."
+  },
+  "servers": [
+    {
+      "url": "https://h3manth.com/fun/tattvakosha"
+    }
+  ],
+  "paths": {
+    "/api/search": {
+      "get": {
+        "operationId": "searchTattvakosha",
+        "summary": "Search Sanskrit headwords by Devanāgarī, IAST, ASCII phonetic, or English gloss",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Search query in Devanāgarī, IAST, ASCII Roman, or English (e.g. jiva, अग्नि, lotus)"
+          },
+          {
+            "name": "pillar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["all", "kosha", "lakshana", "ekakshara", "nirukti"],
+              "default": "all"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 50, "default": 12 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ranked Sanskrit lexicon matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": { "type": "string" },
+                    "pillar": { "type": "string" },
+                    "count": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "deva": { "type": "string" },
+                          "iast": { "type": "string" },
+                          "pillar": { "type": "string" },
+                          "domain": { "type": "string" },
+                          "englishGlosses": { "type": "array", "items": { "type": "string" } },
+                          "citation": { "type": "string" },
+                          "url": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entry": {
+      "get": {
+        "operationId": "getSanskritEntry",
+        "summary": "Retrieve the complete scholarly record for a headword ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Entry slug, e.g. jiva, ekakshara-a, pramana, surya"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full Tattvakośa entry record",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" }
+              }
+            }
+          },
+          "404": {
+            "description": "Entry ID not found"
+          }
+        }
+      }
+    },
+    "/api/stats": {
+      "get": {
+        "operationId": "getCorpusStats",
+        "summary": "Return corpus counts across all 4 lexical registers and 17 thematic vargas",
+        "responses": {
+          "200": {
+            "description": "Tattvakośa metadata and register counts",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

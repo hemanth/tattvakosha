@@ -1,0 +1,75 @@
+Options -Indexes
+
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
+  Header set Cross-Origin-Resource-Policy "cross-origin"
+  Header set content-signal "ai-train=yes, search=yes, ai-input=yes"
+  Header append Vary "Accept"
+  Header add Link "</fun/tattvakosha/.well-known/api-catalog>; rel=\"api-catalog\"; type=\"application/linkset+json\", </fun/tattvakosha/.well-known/agent-skills/index.json>; rel=\"service-desc\"; type=\"application/json\", </fun/tattvakosha/.well-known/mcp/server-card.json>; rel=\"describedby\"; type=\"application/json\", </fun/tattvakosha/.well-known/agent-card.json>; rel=\"describedby\"; type=\"application/json\", </fun/tattvakosha/llms.txt>; rel=\"describedby\"; type=\"text/plain\", </fun/tattvakosha/openapi.json>; rel=\"service-desc\"; type=\"application/json\""
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /fun/tattvakosha/
+
+  # Markdown content negotiation for agents requesting Accept: text/markdown
+  RewriteCond %{REQUEST_URI} ^/fun/tattvakosha/?$
+  RewriteCond %{HTTP_ACCEPT} text/markdown [NC]
+  RewriteRule ^$ api.php?action=markdown [QSA,L]
+
+  # JSON API routes
+  RewriteRule ^api/search/?$ api.php?action=search [QSA,L]
+  RewriteRule ^api/entry/?$ api.php?action=entry [QSA,L]
+  RewriteRule ^api/stats/?$ api.php?action=stats [QSA,L]
+
+  # RFC 9727 API catalog
+  RewriteRule ^\.well-known/api-catalog$ api-catalog.json [L]
+</IfModule>
+
+<Files "llms.txt">
+  ForceType "text/plain; charset=utf-8"
+</Files>
+
+<Files "llms-full.txt">
+  ForceType "text/plain; charset=utf-8"
+</Files>
+
+<Files "auth.md">
+  ForceType "text/markdown; charset=utf-8"
+</Files>
+
+<Files "api-catalog.json">
+  ForceType "application/linkset+json; charset=utf-8"
+</Files>
+
+<Files "agent-card.json">
+  ForceType "application/json; charset=utf-8"
+</Files>
+
+<Files "server-card.json">
+  ForceType "application/json; charset=utf-8"
+</Files>
+
+<Files "openapi.json">
+  ForceType "application/json; charset=utf-8"
+</Files>
+
+<Files "http-message-signatures-directory">
+  ForceType "application/json; charset=utf-8"
+</Files>
+
+<Files "oauth-protected-resource">
+  ForceType "application/json; charset=utf-8"
+</Files>
+
+<FilesMatch "\.mjs$">
+  ForceType "application/javascript; charset=utf-8"
+</FilesMatch>
+
+<FilesMatch "\.wasm$">
+  ForceType "application/wasm"
+</FilesMatch>
+
+<FilesMatch "\.onnx$">
+  ForceType "application/octet-stream"
+</FilesMatch>

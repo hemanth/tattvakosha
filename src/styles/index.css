@@ -1,0 +1,2382 @@
+/*
+ * Tattvakośa · Achromatic Ledger & Swiss Scholarly Workbench
+ * Dealt via design-taste-frontend (app-screens: achromatic-ledger, seed 1445695982)
+ * + UI/UX Pro Max (Swiss Modernism 2.0, WCAG AA 4.5:1+, 44px mobile touch targets)
+ *
+ * Desktop Grid Arithmetic @ 1440px:
+ *   240px (Left Rail) + 1200px (Fluid Canvas) = 1440px
+ *   Inside Canvas: 24px (L pad) + 272px (Headwords) + 16px + 516px (Lexicon Sheet, 1fr) + 16px + 332px (Pramāṇa Rail) + 24px (R pad) = 1200px
+ */
+
+:root {
+  /* Low-Chroma Stone Ground & Pure Sheet Surfaces (0% yellow-cream, <1% coloured pixels) */
+  --ground: #f4f3f1;
+  --surface: #ffffff;
+  --raised: #ecebe8;
+  --active: #e4e3df;
+
+  /* 3-Step Structural Hairlines */
+  --border: #e2e1de;
+  --rule: #eeedea;
+  --control: #c8c7c2;
+
+  /* 3-Tier Ink Hierarchy (All >= 5.3:1 WCAG AA on both surface & ground) */
+  --text: #0a0a0a;
+  --muted: #4f4f4f;
+  --faint: #636363;
+
+  /* Near-Black Primary Action & Single Data Hue (Mayūra Sapphire #1d5fbf) */
+  --primary: #141414;
+  --primary-ink: #ffffff;
+  --data-hue: #1d5fbf;
+  --data-hue-soft: #edf4fc;
+  --positive: #247b50;
+
+  /* Bimodal Tight Radii (8 / 6 / 4) */
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --radius-chip: 4px;
+
+  /* 4px-Base Spacing & Control Pitch */
+  --sidebar-width: 240px;
+  --gap: 16px;
+  --pad: 24px;
+  --card-pad: 20px;
+  --nav-row: 34px;
+  --control-height: 34px;
+
+  /* 2-Typeface Architecture: Geist (Latin/IAST + tabular numerals) + Tiro Devanagari Sanskrit */
+  --font: "Geist", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-deva: "Tiro Devanagari Sanskrit", serif;
+
+  /* Reading Scale Multiplier */
+  --font-scale: 1;
+
+  /* Z-Index Scale (UI/UX Pro Max) */
+  --z-sticky: 10;
+  --z-popover: 30;
+  --z-sheet: 50;
+  --z-modal: 60;
+
+  color-scheme: light;
+}
+
+[data-font-scale="large"] {
+  --font-scale: 1.09;
+}
+
+[data-font-scale="xlarge"] {
+  --font-scale: 1.18;
+}
+
+[data-theme="dark"] {
+  --ground: #0a0a0a;
+  --surface: #141414;
+  --raised: #1e1e1e;
+  --active: #262626;
+
+  --border: #262626;
+  --rule: #1d1d1d;
+  --control: #3d3d3d;
+
+  --text: #f5f5f5;
+  --muted: #b8b8b8;
+  --faint: #949494;
+
+  --primary: #f5f5f5;
+  --primary-ink: #0a0a0a;
+  --data-hue: #5b9cf6;
+  --data-hue-soft: #13233a;
+  --positive: #3fc07a;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--data-hue);
+  color: #ffffff;
+}
+
+html {
+  font-size: calc(16px * var(--font-scale));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  overflow-x: clip;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--control);
+  text-underline-offset: 3px;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
+}
+
+a:hover {
+  color: var(--data-hue);
+  text-decoration-color: var(--data-hue);
+}
+
+:focus-visible {
+  outline: 2px solid var(--data-hue);
+  outline-offset: 2px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Accessibility Skip Link */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: var(--z-modal);
+  padding: 8px 14px;
+  border-radius: var(--radius-control);
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 16px;
+}
+
+/* ==========================================================================
+   1. Open-Plane Application Shell
+   ========================================================================== */
+
+.app-shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  align-items: start;
+}
+
+/* Left Navigation Rail (240px on --ground, 1px hairline) */
+.app-rail {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  padding: 20px 12px 16px;
+  background: var(--ground);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+}
+
+.rail-brand-btn {
+  width: 100%;
+  min-height: 44px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  transition: background-color 140ms ease;
+}
+
+.rail-brand-btn:hover {
+  background: var(--raised);
+}
+
+.rail-mark {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.rail-brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rail-brand-name {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.rail-brand-deva {
+  font-family: var(--font-deva);
+  font-weight: 400;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.rail-brand-sub {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Search Field in Rail */
+.rail-search-block {
+  padding: 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rail-field-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 0 4px;
+}
+
+.rail-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.rail-search-icon {
+  position: absolute;
+  left: 11px;
+  color: var(--faint);
+  pointer-events: none;
+}
+
+.rail-search-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 30px 0 34px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--control);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.85rem;
+  transition: border-color 160ms ease;
+}
+
+.rail-search-input::placeholder {
+  color: var(--faint);
+}
+
+.rail-search-input:focus {
+  outline: none;
+  border-color: var(--data-hue);
+}
+
+.rail-search-clear {
+  position: absolute;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: var(--radius-chip);
+  background: var(--raised);
+  color: var(--muted);
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rail-shortcut-hint {
+  position: absolute;
+  right: 9px;
+  font-size: 0.8125rem;
+  color: var(--faint);
+  pointer-events: none;
+}
+
+/* Sidebar Groups (Sentence-Case Labels, 34px Row Pitch, Grey Active Pill) */
+.rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rail-group-title {
+  padding: 0 8px 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.rail-nav-row {
+  width: 100%;
+  min-height: var(--nav-row);
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.rail-nav-row:hover {
+  background: var(--raised);
+  color: var(--text);
+}
+
+.rail-nav-row.is-active {
+  background: var(--active);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.rail-nav-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail-nav-count {
+  font-size: 0.8125rem;
+  color: var(--faint);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.rail-nav-row.is-active .rail-nav-count {
+  color: var(--text);
+}
+
+/* Rail Footer: Ninada Voice Studio & Display Controls */
+.rail-footer {
+  margin-top: auto;
+  padding: 12px 4px 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rail-voice-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.rail-voice-status {
+  flex: 1;
+  height: 100%;
+  padding: 0 9px;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8125rem;
+  color: var(--text);
+  min-width: 0;
+}
+
+.voice-status-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.voice-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--faint);
+  flex-shrink: 0;
+}
+
+.phase-ready .voice-dot,
+.voice-dot.phase-ready,
+.phase-playing .voice-dot,
+.voice-dot.phase-playing {
+  background: var(--positive);
+}
+
+.phase-loading .voice-dot,
+.voice-dot.phase-loading,
+.phase-synthesizing .voice-dot,
+.voice-dot.phase-synthesizing {
+  background: var(--data-hue);
+}
+
+.rail-voice-gender {
+  display: inline-flex;
+  height: 100%;
+  border-left: 1px solid var(--border);
+}
+
+.voice-g-btn {
+  height: 100%;
+  padding: 0 8px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-deva);
+  font-size: 0.84rem;
+  color: var(--muted);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.voice-g-btn + .voice-g-btn {
+  border-left: 1px solid var(--border);
+}
+
+.voice-g-btn.is-active {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.rail-utility-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.rail-util-btn {
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.rail-util-btn:hover {
+  background: var(--raised);
+  color: var(--text);
+  border-color: var(--control);
+}
+
+/* Mobile Topbar & Search (Hidden on Desktop >= 961px) */
+.mobile-topbar,
+.mobile-search-bar {
+  display: none;
+}
+
+/* ==========================================================================
+   2. Varga Book-Index Dropdown
+   ========================================================================== */
+
+.varga-dropdown {
+  position: relative;
+  padding: 0 4px;
+}
+
+.varga-trigger-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 34px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.varga-trigger-group.is-filtered {
+  border-color: var(--text);
+}
+
+.varga-trigger {
+  flex: 1;
+  height: 100%;
+  padding: 0 9px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: left;
+}
+
+.varga-trigger-prefix {
+  font-size: 0.8125rem;
+  color: var(--faint);
+  flex-shrink: 0;
+}
+
+.varga-trigger-value {
+  flex: 1;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.varga-trigger-count {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.varga-chevron {
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: transform 150ms ease;
+}
+
+.varga-dropdown.is-open .varga-chevron {
+  transform: rotate(180deg);
+}
+
+.varga-clear-btn {
+  height: 100%;
+  padding: 0 8px;
+  border: none;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+}
+
+.varga-popover {
+  position: absolute;
+  left: 4px;
+  top: calc(100% + 6px);
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(460px, 68vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--control);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14); /* taste-skill-ignore */
+  z-index: var(--z-popover);
+  overflow: hidden;
+}
+
+.varga-popover-head {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--ground);
+}
+
+.varga-popover-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.varga-popover-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.varga-popover-deva {
+  font-family: var(--font-deva);
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.varga-filter-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.varga-filter-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  font-size: 0.85rem;
+}
+
+.varga-filter-clear {
+  position: absolute;
+  right: 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+}
+
+.varga-popover-body {
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.varga-kanda-section {
+  margin-top: 8px;
+}
+
+.varga-kanda-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.varga-kanda-deva {
+  font-family: var(--font-deva);
+  font-weight: 400;
+  font-size: 0.84rem;
+}
+
+.varga-option {
+  width: 100%;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  padding: 7px 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  text-align: left;
+  font-size: 0.84rem;
+  color: var(--text);
+}
+
+.varga-option:hover,
+.varga-option.is-focused {
+  background: var(--ground);
+}
+
+.varga-option.is-selected {
+  background: var(--active);
+  font-weight: 600;
+}
+
+.varga-opt-main {
+  min-width: 0;
+}
+
+.varga-opt-sub {
+  font-style: normal;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.varga-opt-dots {
+  flex: 1 1 12px;
+  border-bottom: 1px solid var(--rule);
+  transform: translateY(-3px);
+}
+
+.varga-opt-num {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.varga-empty {
+  padding: 16px 8px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   3. Fluid Canvas, Title Row, Controls & Akārādi Strip
+   ========================================================================== */
+
+.app-canvas {
+  min-width: 0;
+  width: 100%;
+  padding: var(--pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.canvas-header-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.canvas-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex-wrap: wrap;
+}
+
+.canvas-title-block {
+  min-width: 0;
+}
+
+.canvas-h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.canvas-subline {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.canvas-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Flat Achromatic Controls (Zero resting shadow, 34px uniform height) */
+.btn-primary,
+.btn-secondary,
+.btn-tertiary {
+  height: var(--control-height);
+  padding: 0 12px;
+  border-radius: var(--radius-control);
+  font-size: 0.84rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 120ms ease;
+}
+
+.btn-primary {
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  border: 1px solid var(--control);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.btn-secondary:hover {
+  background: var(--raised);
+}
+
+.btn-secondary.is-selected {
+  background: var(--active);
+  border-color: var(--text);
+}
+
+.btn-tertiary {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  background: var(--ground);
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.btn-tertiary:hover {
+  background: var(--raised);
+  color: var(--text);
+}
+
+.btn-primary:active,
+.btn-secondary:active,
+.btn-tertiary:active {
+  transform: translateY(1px);
+}
+
+/* Akārādi Alphabet Strip */
+.varna-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+}
+
+.varna-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.varna-chip {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  font-family: var(--font-deva);
+  font-size: 0.92rem;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.varna-all {
+  font-family: var(--font);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 0 10px;
+  background: var(--ground);
+  border-color: var(--border);
+  margin-right: 4px;
+}
+
+.varna-chip:hover:not(:disabled) {
+  background: var(--raised);
+}
+
+.varna-chip.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
+}
+
+.varna-chip.is-empty {
+  color: var(--faint);
+}
+
+/* ==========================================================================
+   4. Balanced 3-Pane Reader Grid (Headwords | Lexicon Sheet | Pramāṇa Rail)
+   ========================================================================== */
+
+.canvas-main {
+  min-width: 0;
+}
+
+.reader-grid {
+  display: grid;
+  grid-template-columns: 276px minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.reader-content-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 0;
+  align-items: stretch;
+  min-width: 0;
+}
+
+/* Pane 1: Headwords Queue */
+.headword-pane {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.pane-header {
+  height: 45px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.pane-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pane-count {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  text-align: right;
+}
+
+.mobile-headword-toggle {
+  display: none;
+}
+
+.headword-scroll {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.hw-more-wrap {
+  padding: 8px 4px 10px;
+}
+
+.hw-more-btn {
+  width: 100%;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--ground);
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.hw-more-btn:hover {
+  background: var(--raised);
+}
+
+.varna-sticky-head {
+  position: sticky;
+  top: -6px;
+  z-index: 2;
+  padding: 4px 8px;
+  margin: 2px 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-deva);
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.hw-row {
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 10px;
+  margin-bottom: 2px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  min-width: 0;
+  transition: background-color 140ms ease;
+}
+
+.hw-row:hover {
+  background: var(--ground);
+}
+
+.hw-row.is-active {
+  background: var(--active);
+}
+
+.hw-row-line1 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.hw-row-deva {
+  font-family: var(--font-deva);
+  font-size: 1.06rem;
+  color: var(--text);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hw-row-pos {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.hw-row-line2 {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hw-row-iast {
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.hw-row-sep {
+  color: var(--faint);
+}
+
+.hw-row-gloss {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pane-empty {
+  padding: 28px 16px;
+  text-align: center;
+}
+
+.empty-deva {
+  margin: 0 0 6px;
+  font-family: var(--font-deva);
+  font-size: 1.25rem;
+  color: var(--text);
+}
+
+.empty-note {
+  margin: 0 0 12px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   5. Pane 2: Primary Lexicon Sheet & Signature Acoustic Prosody Strip
+   ========================================================================== */
+
+.entry-main-sheet {
+  background: var(--surface);
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.entry-head {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.entry-head-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.entry-word-cluster {
+  min-width: 0;
+}
+
+.entry-word-deva {
+  margin: 0 0 6px;
+  font-family: var(--font-deva);
+  font-size: 2.15rem;
+  font-weight: 400;
+  line-height: 1.22;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.entry-phonetics-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.entry-iast {
+  font-size: 1.02rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.entry-pos-line {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* Signature Product Element: Chandas Prosody & Ninada 24 kHz Strip (Data Hue #1d5fbf) */
+.prosody-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  background: var(--ground);
+  border: 1px solid var(--border);
+}
+
+.prosody-strip.is-playing {
+  background: var(--data-hue-soft);
+  border-color: var(--data-hue);
+}
+
+.prosody-play-btn {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--data-hue);
+  background: var(--data-hue);
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  transition: opacity 150ms ease, transform 120ms ease;
+}
+
+[data-theme="dark"] .prosody-play-btn {
+  color: #0a0a0a;
+}
+
+.prosody-play-btn:hover {
+  opacity: 0.92;
+}
+
+.prosody-play-btn:active {
+  transform: translateY(1px);
+}
+
+.prosody-meter {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.prosody-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.prosody-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.prosody-bar-track {
+  width: 24px;
+  height: 18px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.prosody-bar-fill {
+  width: 100%;
+  border-radius: 2px;
+  background: var(--data-hue);
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.prosody-unit.weight-laghu .prosody-bar-fill {
+  height: 7px;
+  opacity: 0.72;
+}
+
+.prosody-unit.weight-guru .prosody-bar-fill {
+  height: 16px;
+}
+
+@keyframes prosodyPulse {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.22);
+  }
+}
+
+.prosody-strip.is-playing .prosody-bar-fill {
+  transform-origin: bottom;
+  animation: prosodyPulse 640ms ease-in-out infinite;
+}
+
+.prosody-syl {
+  font-family: var(--font-deva);
+  font-size: 0.82rem;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.prosody-summary {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+/* Entry Content Sections */
+.entry-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.gloss-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gloss-tag {
+  padding: 4px 10px;
+  border-radius: var(--radius-chip);
+  background: var(--ground);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.entry-summary-lead {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text);
+  max-width: 66ch;
+}
+
+.sense-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sense-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.sense-row:first-child {
+  padding-top: 4px;
+  border-top: none;
+}
+
+.sense-index {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--muted);
+  min-width: 20px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.sense-content {
+  flex: 1;
+  min-width: 0;
+  max-width: 66ch;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sense-register-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sense-register-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.sense-register-deva {
+  font-family: var(--font-deva);
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.sense-form-chip {
+  padding: 2px 7px;
+  border-radius: var(--radius-chip);
+  background: var(--ground);
+  border: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.sense-primary {
+  margin: 0;
+  font-size: 0.96rem;
+  line-height: 1.62;
+  color: var(--text);
+}
+
+.sense-note {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   6. Pane 3: Scholarly Pramāṇa, Padaccheda & Lexical Ledger Rail
+   ========================================================================== */
+
+.entry-scholarly-rail {
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.rail-card {
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.rail-card:last-child {
+  border-bottom: none;
+}
+
+.rail-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rail-card-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pramana-quote {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-control);
+  background: var(--ground);
+  border-left: 2px solid var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pramana-deva {
+  margin: 0;
+  font-family: var(--font-deva);
+  font-size: 1.12rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.pramana-iast {
+  margin: 0;
+  font-size: 0.84rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.pramana-trans {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.pramana-cite {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Padaccheda Ledger Rows */
+.pada-ledger {
+  display: flex;
+  flex-direction: column;
+}
+
+.pada-row {
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pada-row:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.pada-term {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.pada-deva {
+  font-family: var(--font-deva);
+  font-weight: 400;
+  font-size: 0.98rem;
+  color: var(--text);
+}
+
+.pada-iast {
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.pada-meaning {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* Key-Value Metadata Ledger */
+.kv-ledger {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.kv-row {
+  min-height: 32px;
+  padding: 6px 0;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.82rem;
+}
+
+.kv-row:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.kv-row dt {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.kv-row dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 500;
+  text-align: right;
+  min-width: 0;
+}
+
+.related-block {
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.related-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.related-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.related-chip {
+  min-height: 30px;
+  padding: 4px 9px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
+  background: var(--ground);
+  font-size: 0.82rem;
+  color: var(--text);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.related-chip:hover {
+  background: var(--raised);
+  border-color: var(--control);
+}
+
+.related-chip-iast {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+/* Ninada Speak Buttons (Pill & Inline) */
+.ninada-speak-btn {
+  border: 1px solid var(--border);
+  background: var(--ground);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.ninada-speak-pill {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: var(--radius-control);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ninada-speak-inline {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-control);
+  flex-shrink: 0;
+}
+
+.ninada-speak-btn:hover,
+.ninada-speak-btn.is-active {
+  background: var(--data-hue);
+  border-color: var(--data-hue);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .ninada-speak-btn:hover,
+[data-theme="dark"] .ninada-speak-btn.is-active {
+  color: #0a0a0a;
+}
+
+@keyframes ninadaRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ninada-spin {
+  animation: ninadaRotate 820ms linear infinite;
+}
+
+/* ==========================================================================
+   7. Card Directory & Varṇamālā Matrix Views
+   ========================================================================== */
+
+.directory-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.directory-empty {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 40px 24px;
+  text-align: center;
+  align-items: center;
+}
+
+.dir-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dir-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dir-group-letter {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.dir-letter-deva {
+  margin: 0;
+  font-family: var(--font-deva);
+  font-size: 1.45rem;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.dir-letter-iast {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.dir-letter-count {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.dir-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: var(--gap);
+}
+
+.dir-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.dir-card:hover {
+  border-color: var(--control);
+}
+
+.dir-card.is-selected {
+  border-color: var(--text);
+}
+
+.dir-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dir-card-titles {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.dir-hw-deva {
+  margin: 0;
+  font-family: var(--font-deva);
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.dir-hw-iast {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.dir-hw-pos {
+  padding: 1px 6px;
+  border-radius: var(--radius-chip);
+  background: var(--ground);
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.dir-card-gloss {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.dir-card-def {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dir-card-foot {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.dir-card-open {
+  font-weight: 500;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.dir-load-more {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+/* Varṇamālā Matrix Sheet */
+.matrika-sheet {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.matrika-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.matrika-sub {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.matrika-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.matrika-band {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.matrika-band-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.matrika-band-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.matrika-band-count {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.matrika-cells {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+  gap: 8px;
+}
+
+.matrika-cell {
+  min-height: 58px;
+  padding: 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--ground);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.matrika-cell:hover {
+  background: var(--raised);
+  border-color: var(--control);
+}
+
+.matrika-cell.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
+}
+
+.matrika-cell-char {
+  font-family: var(--font-deva);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.matrika-cell-iast {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.matrika-cell.is-active .matrika-cell-iast {
+  color: var(--primary-ink);
+  opacity: 0.85;
+}
+
+/* ==========================================================================
+   8. Footer & Svādhyāya Contemplation Modal
+   ========================================================================== */
+
+.canvas-footer {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.footer-sep {
+  color: var(--faint);
+}
+
+.contemplate-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--surface);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+}
+
+.contemplate-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.contemplate-tag {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.contemplate-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.contemplate-stage {
+  max-width: 720px;
+  margin: auto;
+  padding: 32px 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.contemplate-domain {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.contemplate-word {
+  margin: 0;
+  font-family: var(--font-deva);
+  font-size: 2.75rem;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.contemplate-iast {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--muted);
+}
+
+.contemplate-divider {
+  width: 48px;
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+.contemplate-sutra {
+  margin: 0;
+  font-family: var(--font-deva);
+  font-size: 1.45rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.contemplate-sutra-iast {
+  margin: 0;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.contemplate-meaning {
+  margin: 8px 0 0;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+.contemplate-cite {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   9. Responsive Breakpoints (1220px / 960px Tablet Fold / 640px Phone)
+   ========================================================================== */
+
+@media (max-width: 1220px) {
+  .reader-content-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .entry-scholarly-rail {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 960px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-rail {
+    display: none;
+  }
+
+  .mobile-topbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    height: 48px;
+    padding: 0 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .mobile-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .mobile-menu-btn {
+    width: 40px;
+    height: 40px;
+    margin-left: -8px;
+    border: none;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-brand-btn {
+    min-height: 40px;
+    padding: 0 4px;
+    border: none;
+    border-radius: var(--radius-control);
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    color: inherit;
+    min-width: 0;
+  }
+
+  .mobile-brand-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .mobile-brand-deva {
+    font-family: var(--font-deva);
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  .mobile-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-voice-mini {
+    height: 34px;
+    padding-left: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--ground);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .mobile-icon-btn {
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--ground);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .mobile-search-bar {
+    position: relative;
+    padding: 10px 16px 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .mobile-search-bar .rail-search-icon {
+    left: 28px;
+  }
+
+  .mobile-search-bar .rail-search-clear {
+    right: 24px;
+  }
+
+  .mobile-search-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 36px 0 38px;
+    border: 1px solid var(--control);
+    border-radius: var(--radius-control);
+    background: var(--surface);
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  .mobile-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-sheet);
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+  }
+
+  .mobile-sheet-panel {
+    width: min(320px, 88vw);
+    height: 100dvh;
+    background: var(--ground);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .mobile-sheet-head {
+    height: 48px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.9rem;
+  }
+
+  .mobile-close-btn {
+    min-height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--ground);
+    font-size: 0.8125rem;
+  }
+
+  .mobile-sheet-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .app-canvas {
+    padding: 16px;
+  }
+
+  .reader-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .headword-pane {
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pane-header {
+    display: none;
+  }
+
+  .mobile-headword-toggle {
+    width: 100%;
+    min-height: 46px;
+    padding: 8px 14px;
+    border: none;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .mobile-hw-current {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .mobile-hw-count {
+    font-size: 0.8125rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .mobile-hw-deva {
+    font-family: var(--font-deva);
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+
+  .mobile-hw-iast {
+    font-size: 0.84rem;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-hw-action {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--data-hue);
+    flex-shrink: 0;
+  }
+
+  .headword-pane .headword-scroll {
+    position: static;
+    display: none;
+    max-height: 50vh;
+    border-top: 1px solid var(--border);
+  }
+
+  .headword-pane.is-mobile-open .headword-scroll {
+    display: block;
+  }
+}
+
+@media (max-width: 640px) {
+  .canvas-h1 {
+    font-size: 1.25rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    min-height: 40px;
+  }
+
+  .varna-chip {
+    min-width: 38px;
+    height: 38px;
+    font-size: 0.98rem;
+  }
+
+  .entry-main-sheet {
+    padding: 18px 16px;
+  }
+
+  .entry-word-deva {
+    font-size: 1.9rem;
+  }
+
+  .prosody-play-btn {
+    min-height: 44px;
+  }
+
+  .dir-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
