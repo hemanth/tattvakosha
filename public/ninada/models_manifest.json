@@ -9,15 +9,8 @@
       "expectedBytes": 29288386,
       "totalMB": 27.93,
       "urls": [
-        "./models/sa.onnx",
-        "https://huggingface.co/gnumanth/ninada/resolve/main/onnx/sa.onnx"
-      ],
-      "femaleCacheKey": "ninada_v510_studio_sa_female_24k_q8f16.onnx",
-      "femaleExpectedBytes": 29288386,
-      "femaleTotalMB": 27.93,
-      "femaleUrls": [
-        "./models/sa_female.onnx",
-        "https://huggingface.co/gnumanth/ninada/resolve/main/onnx/sa_female.onnx"
+        "https://huggingface.co/gnumanth/ninada/resolve/main/onnx/sa.onnx",
+        "./models/sa.onnx"
       ],
       "mobileCacheKey": "ninada_v510_mobile_sa_24k_q8f16.onnx",
       "mobileExpectedBytes": 22743764,
@@ -25,13 +18,6 @@
       "mobileUrls": [
         "https://huggingface.co/gnumanth/ninada/resolve/main/onnx_mobile/sa.onnx",
         "./models_mobile/sa.onnx"
-      ],
-      "femaleMobileCacheKey": "ninada_v510_mobile_sa_female_24k_q8f16.onnx",
-      "femaleMobileExpectedBytes": 22743764,
-      "femaleMobileTotalMB": 21.69,
-      "femaleMobileUrls": [
-        "https://huggingface.co/gnumanth/ninada/resolve/main/onnx_mobile/sa_female.onnx",
-        "./models_mobile/sa_female.onnx"
       ]
     },
     "en": {

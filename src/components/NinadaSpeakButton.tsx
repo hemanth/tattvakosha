@@ -24,7 +24,7 @@ export function NinadaSpeakButton({
     title ||
     (isPlaying
       ? "Stop Ninada Sanskrit recitation"
-      : `Pronounce in Sanskrit via Ninada 24 kHz (${ninada.voice === "female" ? "Strī · Female" : "Puruṣa · Male"} voice)`);
+      : "Pronounce in Sanskrit via Ninada 24 kHz (Puruṣa · Male voice)");
 
   const iconSize = variant === "orb" ? 22 : 15;
 

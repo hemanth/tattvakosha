@@ -61,4 +61,4 @@ When loaded in a WebMCP-capable agentic browser (`navigator.modelContext`), Tatt
 1. `search_tattvakosha({ query, pillar, limit })`
 2. `get_sanskrit_entry({ id })`
 3. `open_sanskrit_entry({ id, pillar, viewMode })`
-4. `pronounce_sanskrit({ text, voice })` — Synthesizes 24,000 Hz studio Sanskrit audio via Ninada v5.1 ONNX (`male` or `female`).
+4. `pronounce_sanskrit({ text })` — Synthesizes 24,000 Hz studio Sanskrit audio via Ninada v5.1 ONNX (`male` voice).

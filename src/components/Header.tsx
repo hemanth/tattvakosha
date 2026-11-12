@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { preloadNinadaSanskrit, setNinadaVoiceGender, useNinadaVoice } from "../lib/ninadaTts";
+import { preloadNinadaSanskrit, useNinadaVoice } from "../lib/ninadaTts";
 import type { FontScale, KoshaMeta, PillarFilter, ThemeMode, ViewMode } from "../types";
 import { VargaDropdown } from "./VargaDropdown";
 
@@ -276,36 +276,19 @@ export function Header({
 
       {/* Bottom Voice & Display Controls */}
       <div className="rail-footer">
-        <div className="rail-voice-box" role="group" aria-label="Ninada 24 kHz Sanskrit voice">
+        <div className="rail-voice-box" role="group" aria-label="Ninada 24 kHz male Sanskrit voice">
           <button
             type="button"
             className={`rail-voice-status phase-${ninada.phase}`}
             onClick={() => preloadNinadaSanskrit()}
-            title="Ninada v5.1 24,000 Hz Classical Sanskrit Neural TTS"
+            title="Ninada v5.1 24,000 Hz Classical Sanskrit Neural TTS (Puruṣa · Male voice)"
           >
             <span className="voice-dot" aria-hidden="true" />
             <span className="voice-status-text">{ninada.statusText}</span>
           </button>
-          <div className="rail-voice-gender">
-            <button
-              type="button"
-              className={`voice-g-btn ${ninada.voice === "male" ? "is-active" : ""}`}
-              onClick={() => setNinadaVoiceGender("male")}
-              aria-pressed={ninada.voice === "male"}
-              title="Puruṣa · Male 24 kHz Sanskrit Voice"
-            >
-              पुं
-            </button>
-            <button
-              type="button"
-              className={`voice-g-btn ${ninada.voice === "female" ? "is-active" : ""}`}
-              onClick={() => setNinadaVoiceGender("female")}
-              aria-pressed={ninada.voice === "female"}
-              title="Strī · Female 24 kHz Sanskrit Voice"
-            >
-              स्त्री
-            </button>
-          </div>
+          <span className="rail-voice-badge" lang="sa" title="Puruṣa · Male 24 kHz Sanskrit Voice">
+            पुं
+          </span>
         </div>
 
         <div className="rail-utility-row">
@@ -365,25 +348,16 @@ export function Header({
         </div>
 
         <div className="mobile-topbar-right">
-          <div className="mobile-voice-mini" role="group" aria-label="Sanskrit voice">
+          <button
+            type="button"
+            className="mobile-voice-mini"
+            onClick={() => preloadNinadaSanskrit()}
+            aria-label="Ninada 24 kHz male Sanskrit voice"
+            title="Puruṣa · Male 24 kHz Sanskrit Voice"
+          >
             <span className={`voice-dot phase-${ninada.phase}`} aria-hidden="true" />
-            <button
-              type="button"
-              className={`voice-g-btn ${ninada.voice === "male" ? "is-active" : ""}`}
-              onClick={() => setNinadaVoiceGender("male")}
-              aria-label="Male Sanskrit voice"
-            >
-              पुं
-            </button>
-            <button
-              type="button"
-              className={`voice-g-btn ${ninada.voice === "female" ? "is-active" : ""}`}
-              onClick={() => setNinadaVoiceGender("female")}
-              aria-label="Female Sanskrit voice"
-            >
-              स्त्री
-            </button>
-          </div>
+            <span className="mobile-voice-tag" lang="sa">पुं</span>
+          </button>
 
           <button
             type="button"

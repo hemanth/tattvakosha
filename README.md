@@ -26,13 +26,12 @@ console.log(scanSanskritProsody(hit.deva)); // 2 akṣaras · 4 mātrās
 ## 24 kHz Sanskrit audio
 
 ```ts
-import { setNinadaVoiceGender, speakSanskritWithNinada } from "./src/lib/ninadaTts";
+import { speakSanskritWithNinada } from "./src/lib/ninadaTts";
 
-setNinadaVoiceGender("male");
 await speakSanskritWithNinada("प्रज्ञापूर्वकव्यापारवत्त्वं जीवत्वम् ।", "jiva");
 ```
 
-Runs `gnumanth/ninada` v5.1 ONNX directly in a Web Worker + AudioWorklet with male (`पुं`) and female (`स्त्री`) voices.
+Runs `gnumanth/ninada` v5.1 ONNX directly in a Web Worker + AudioWorklet with the 24 kHz Puruṣa (`पुं`) male voice.
 
 ## Agent-ready API
 

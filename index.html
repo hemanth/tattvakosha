@@ -169,12 +169,12 @@
             {
               name: "pronounce_sanskrit",
               title: "Pronounce Classical Sanskrit at 24 kHz",
-              description: "Recite a Sanskrit headword or sūtra at 24,000 Hz in the browser using Ninada v5.1 ONNX.",
+              description: "Recite a Sanskrit headword or sūtra at 24,000 Hz in the browser using Ninada v5.1 ONNX (male voice).",
               inputSchema: {
                 type: "object",
                 properties: {
                   text: { type: "string", description: "Devanāgarī Sanskrit text to pronounce" },
-                  voice: { type: "string", enum: ["male", "female"] }
+                  voice: { type: "string", enum: ["male"] }
                 },
                 required: ["text"]
               },

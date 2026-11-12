@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import {
-  setNinadaVoiceGender,
   speakSanskritWithNinada,
-  useNinadaVoice,
-  type NinadaGender
+  useNinadaVoice
 } from "../lib/ninadaTts";
 import { scanSanskritProsody } from "../lib/sanskritProsody";
 import type { EkaksharaRegister, KoshaDataset, PillarFilter, ViewMode } from "../types";
@@ -96,7 +94,7 @@ const MOMENTS = [
   },
   {
     title: "Recited at 24 kHz",
-    desc: "Ninada v5.1 recites classical Sanskrit directly in the browser via ONNX, with male and female voices.",
+    desc: "Ninada v5.1 recites classical Sanskrit directly in the browser via ONNX in a studio male voice.",
     img: "landing/ui-reader.jpg",
     w: 2200,
     h: 1375,
@@ -179,13 +177,6 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
   const handleSelectSyllable = (id: string, deva: string) => {
     setActiveSylId(id);
     void speakSanskritWithNinada(shortSyllableGlyph(deva), `lp-syl-${id}`);
-  };
-
-  const handleVoiceSwitch = (gender: NinadaGender) => {
-    setNinadaVoiceGender(gender);
-    if (activeSyl) {
-      void speakSanskritWithNinada(shortSyllableGlyph(activeSyl.deva), utteranceId);
-    }
   };
 
   const corpusRows: CorpusRow[] = useMemo(() => {
@@ -448,24 +439,6 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                     </div>
 
                     <div className="lp-audition-controls">
-                      <button
-                        type="button"
-                        className={`lp-voice-pill ${ninada.voice === "male" ? "is-active" : ""}`}
-                        onClick={() => handleVoiceSwitch("male")}
-                        aria-label="Male Sanskrit voice"
-                        aria-pressed={ninada.voice === "male"}
-                      >
-                        पुं
-                      </button>
-                      <button
-                        type="button"
-                        className={`lp-voice-pill ${ninada.voice === "female" ? "is-active" : ""}`}
-                        onClick={() => handleVoiceSwitch("female")}
-                        aria-label="Female Sanskrit voice"
-                        aria-pressed={ninada.voice === "female"}
-                      >
-                        स्त्री
-                      </button>
                       <button
                         type="button"
                         className="lp-speak-action"
@@ -797,8 +770,8 @@ export function LandingPage({ dataset, onOpenLexicon }: LandingPageProps) {
                 >
                   <dt className="lp-stat-num">24&nbsp;kHz</dt>
                   <dd className="lp-stat-text">
-                    In-browser ONNX Sanskrit recitation via Ninada v5.1, with male and
-                    female voices and no server calls.
+                    In-browser ONNX Sanskrit recitation via Ninada v5.1 in a studio male
+                    voice, with no server calls.
                   </dd>
                 </div>
               </dl>

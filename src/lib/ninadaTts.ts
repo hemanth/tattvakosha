@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { scanSanskritProsody } from "./sanskritProsody";
 
-export type NinadaGender = "male" | "female";
+export type NinadaGender = "male";
 export type NinadaEnginePhase = "unloaded" | "loading" | "ready" | "synthesizing" | "playing" | "error";
 
 export interface NinadaVoiceState {
@@ -19,9 +19,14 @@ const SAMPLE_RATE = 24000;
 const VOICE_STORAGE_KEY = "tattvakosha-ninada-voice";
 
 function readInitialVoice(): NinadaGender {
-  if (typeof window === "undefined") return "male";
-  const saved = window.localStorage.getItem(VOICE_STORAGE_KEY);
-  return saved === "female" ? "female" : "male";
+  if (typeof window !== "undefined") {
+    try {
+      window.localStorage.setItem(VOICE_STORAGE_KEY, "male");
+    } catch {
+      // Ignore storage restrictions
+    }
+  }
+  return "male";
 }
 
 let state: NinadaVoiceState = {
@@ -538,15 +543,20 @@ export function stopSanskritSpeech(): void {
   }
 }
 
-export function setNinadaVoiceGender(nextVoice: NinadaGender): void {
-  if (state.voice === nextVoice) return;
-  stopSanskritSpeech();
+export function setNinadaVoiceGender(_nextVoice: NinadaGender = "male"): void {
+  const lockedVoice: NinadaGender = "male";
   if (typeof window !== "undefined") {
-    window.localStorage.setItem(VOICE_STORAGE_KEY, nextVoice);
+    try {
+      window.localStorage.setItem(VOICE_STORAGE_KEY, lockedVoice);
+    } catch {
+      // Ignore storage restrictions
+    }
   }
-  patchState({ voice: nextVoice });
+  if (state.voice === lockedVoice) return;
+  stopSanskritSpeech();
+  patchState({ voice: lockedVoice });
   if (synthWorker) {
-    synthWorker.postMessage({ type: "load_lang", lang: "sa", voice: nextVoice });
+    synthWorker.postMessage({ type: "load_lang", lang: "sa", voice: lockedVoice });
   }
 }
 
@@ -555,7 +565,7 @@ export function preloadNinadaSanskrit(): void {
   const worker = ensureSynthWorker();
   if (state.phase === "unloaded") {
     patchState({ phase: "loading", progressPct: 5, statusText: "Warming Ninada SA…" });
-    worker.postMessage({ type: "init", lang: "sa", voice: state.voice });
+    worker.postMessage({ type: "init", lang: "sa", voice: "male" });
   }
 }
 
@@ -577,7 +587,7 @@ export async function speakSanskritWithNinada(rawSanskrit: string, utteranceId: 
   const cleaned = cleanSanskritForRecitation(rawSanskrit);
   if (!cleaned) return;
 
-  const voice = state.voice;
+  const voice: NinadaGender = "male";
   const cacheKey = `sa:${voice}:${cleaned}`;
   const sessionId = ++activePlaySessionId;
 

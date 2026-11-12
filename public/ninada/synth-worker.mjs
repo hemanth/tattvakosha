@@ -171,8 +171,8 @@ async function switchToPureWasmOrt() {
   return resolveWorkerOrt({ forcePureWasm: true });
 }
 
-function normalizeVoiceKey(voice) {
-  return typeof voice === 'string' && voice.trim().toLowerCase() === 'female' ? 'female' : 'male';
+function normalizeVoiceKey(_voice) {
+  return 'male';
 }
 
 function shouldUseMobileWeights() {

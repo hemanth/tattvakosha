@@ -63,7 +63,7 @@
             },
             "voice": {
               "type": "string",
-              "enum": ["male", "female"],
+              "enum": ["male"],
               "default": "male"
             }
           },

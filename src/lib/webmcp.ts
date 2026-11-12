@@ -87,7 +87,7 @@ export function registerTattvakoshaWebMcp(): void {
 
   const pronounceFn = async (args: Record<string, unknown>) => {
     const text = String(args.text || "").trim();
-    const voice: NinadaGender = args.voice === "female" ? "female" : "male";
+    const voice: NinadaGender = "male";
     setNinadaVoiceGender(voice);
     await speakSanskritWithNinada(text, `webmcp-${Date.now()}`);
     return { spoken: text, voice, sampleRateHz: 24000 };
@@ -173,12 +173,12 @@ export function registerTattvakoshaWebMcp(): void {
 
   defineTool(
     "pronounce_sanskrit",
-    "Recite a Sanskrit headword or sūtra at 24,000 Hz in the browser using Ninada v5.1 ONNX.",
+    "Recite a Sanskrit headword or sūtra at 24,000 Hz in the browser using Ninada v5.1 ONNX (male voice).",
     {
       type: "object",
       properties: {
         text: { type: "string", description: "Devanāgarī Sanskrit text to pronounce" },
-        voice: { type: "string", enum: ["male", "female"], default: "male" }
+        voice: { type: "string", enum: ["male"], default: "male" }
       },
       required: ["text"]
     },

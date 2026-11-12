@@ -472,30 +472,23 @@ a:hover {
   background: var(--data-hue);
 }
 
-.rail-voice-gender {
+.rail-voice-badge {
   display: inline-flex;
+  align-items: center;
   height: 100%;
+  padding: 0 9px;
   border-left: 1px solid var(--border);
+  font-family: var(--font-deva);
+  font-size: 0.82rem;
+  color: var(--muted);
+  user-select: none;
 }
 
-.voice-g-btn {
-  height: 100%;
-  padding: 0 8px;
-  border: none;
-  background: transparent;
+.mobile-voice-tag {
   font-family: var(--font-deva);
   font-size: 0.84rem;
-  color: var(--muted);
-  transition: background-color 150ms ease, color 150ms ease;
-}
-
-.voice-g-btn + .voice-g-btn {
-  border-left: 1px solid var(--border);
-}
-
-.voice-g-btn.is-active {
-  background: var(--primary);
-  color: var(--primary-ink);
+  color: var(--text);
+  line-height: 1;
 }
 
 .rail-utility-row {
@@ -2158,7 +2151,7 @@ a:hover {
 
   .mobile-voice-mini {
     height: 34px;
-    padding-left: 8px;
+    padding: 0 10px;
     border: 1px solid var(--border);
     border-radius: var(--radius-control);
     background: var(--ground);
